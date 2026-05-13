@@ -1,0 +1,19 @@
+{
+	"name": "llm-helpers",
+	"version": "1.0.0",
+	"private": "true",
+	"workspaces": [
+		"packages/*"
+	],
+	"packageManager": "pnpm@latest",
+	"scripts": {
+		"build": "pnpm -r build",
+		"test": "pnpm -r test",
+		"dev": "pnpm --filter @my-scope/app dev"
+	},
+	"author": "Enpersonn",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	}
+}
