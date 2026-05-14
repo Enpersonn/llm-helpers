@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { modelAdapterRegistry } from "./llm.js";
+import { z } from 'zod';
+import { type InternalProviderName, InternalProviderNameSchema } from './types/index.js';
 
 export const LLMMessageSchema = z.object({
 	content: z.string(),
-	role: z.enum(["system", "user", "assistant"]),
+	role: z.enum(['system', 'user', 'assistant']),
 });
 
 export type LLMMessage = z.infer<typeof LLMMessageSchema>;
@@ -15,7 +15,7 @@ export const LLMStreamChunkSchema = z.object({
 	eval_count: z.number().optional(),
 	message: z.object({
 		content: z.string(),
-		role: z.literal("assistant"),
+		role: z.literal('assistant'),
 	}),
 	model: z.string(),
 	prompt_eval_count: z.number().optional(),
@@ -23,10 +23,8 @@ export const LLMStreamChunkSchema = z.object({
 });
 export type LLMStreamChunk = z.infer<typeof LLMStreamChunkSchema>;
 
-export type registerTypes = keyof typeof modelAdapterRegistry;
-
 export type LLMRequest = {
-	provider?: registerTypes;
+	provider?: InternalProviderName;
 	model?: string;
 	messages: LLMMessage[];
 	temperature?: number;
@@ -37,9 +35,7 @@ export type LLMRequest = {
 };
 
 export const LLMConfigSchema = z.object({
-	defaultProvider: z.enum(
-		Object.keys(modelAdapterRegistry) as [registerTypes, ...registerTypes[]],
-	),
+	defaultProvider: InternalProviderNameSchema,
 	model: z.string(),
 	temperature: z.number().default(0.85),
 	maxTokens: z.number().optional(),

@@ -1,26 +1,36 @@
-import type { LLMAdapter } from "../types.js";
+import type { AdapterFactory, InternalLLMAdapter } from '../types/index.js';
 
-export function createOllamaAdapter(config: {
+type OllamaConfig = {
 	endpoint?: string;
 	model: string;
-}): LLMAdapter {
-	const endpoint = config.endpoint ?? "http://localhost:11434/api/chat";
+};
+
+export const ollamaFactory = {
+	provider: 'ollama',
+
+	create(config: OllamaConfig) {
+		return createOllamaAdapter(config);
+	},
+} satisfies AdapterFactory<'ollama', OllamaConfig>;
+
+export function createOllamaAdapter(config: OllamaConfig): InternalLLMAdapter<'ollama', OllamaConfig> {
+	const endpoint = config.endpoint ?? 'http://localhost:11434/api/chat';
 
 	return {
-		provider: "ollama",
-
+		provider: 'ollama',
+		config,
 		async chat(request) {
 			const res = await fetch(endpoint, {
-				method: "POST",
+				method: 'POST',
 				headers: {
-					"Content-Type": "application/json",
+					'Content-Type': 'application/json',
 				},
 				signal: request.signal,
 				body: JSON.stringify({
 					model: request.model ?? config.model,
 					messages: request.messages,
 					stream: false,
-					format: request.json ? "json" : undefined,
+					format: request.json ? 'json' : undefined,
 					options: {
 						temperature: request.temperature,
 						num_predict: request.maxTokens,
@@ -39,25 +49,25 @@ export function createOllamaAdapter(config: {
 			};
 
 			return {
-				provider: "ollama",
+				provider: 'ollama',
 				model: request.model ?? config.model,
-				text: data.message?.content ?? "",
+				text: data.message?.content ?? '',
 				raw: data,
 			};
 		},
 
 		async *stream(request) {
 			const res = await fetch(endpoint, {
-				method: "POST",
+				method: 'POST',
 				headers: {
-					"Content-Type": "application/json",
+					'Content-Type': 'application/json',
 				},
 				signal: request.signal,
 				body: JSON.stringify({
 					model: request.model ?? config.model,
 					messages: request.messages,
 					stream: true,
-					format: request.json ? "json" : undefined,
+					format: request.json ? 'json' : undefined,
 					options: {
 						temperature: request.temperature,
 						num_predict: request.maxTokens,
@@ -70,12 +80,12 @@ export function createOllamaAdapter(config: {
 			}
 
 			if (!res.body) {
-				throw new Error("No response body from Ollama");
+				throw new Error('No response body from Ollama');
 			}
 
 			const reader = res.body.getReader();
 			const decoder = new TextDecoder();
-			let buffer = "";
+			let buffer = '';
 
 			while (true) {
 				const { done, value } = await reader.read();
@@ -84,8 +94,8 @@ export function createOllamaAdapter(config: {
 
 				buffer += decoder.decode(value, { stream: true });
 
-				const lines = buffer.split("\n");
-				buffer = lines.pop() ?? "";
+				const lines = buffer.split('\n');
+				buffer = lines.pop() ?? '';
 
 				for (const line of lines) {
 					if (!line.trim()) continue;
@@ -97,7 +107,7 @@ export function createOllamaAdapter(config: {
 						done?: boolean;
 					};
 
-					const text = chunk.message?.content ?? "";
+					const text = chunk.message?.content ?? '';
 
 					if (text || chunk.done) {
 						yield {

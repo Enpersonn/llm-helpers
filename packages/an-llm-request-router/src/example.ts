@@ -1,26 +1,14 @@
-import { createOllamaAdapter } from "./adapters/ollama.js";
-import { LLM } from "./llm.js";
+import { LLM } from './llm.js';
 
-const llm = new LLM(
-	{
-		defaultProvider: "ollama",
-		providers: {
-			ollama: {
-				endpoint: "http://localhost:11434/api/chat",
-				model: "llama3.1",
-			},
-			openai: {
-				apiKey: process.env.OPENAI_API_KEY!,
-				model: "gpt-4.1-mini",
-			},
+const llm = new LLM({
+	defaultProvider: 'ollama',
+
+	providers: {
+		ollama: {
+			model: 'llama3.1',
 		},
 	},
-	{
-		ollama: createOllamaAdapter({
-			model: "llama3.1",
-		}),
-	},
-);
+});
 
 // openai: createOpenAIAdapter({
 //   apiKey: process.env.OPENAI_API_KEY!,
@@ -38,8 +26,8 @@ const llm = new LLM(
 const result = await llm.chat({
 	messages: [
 		{
-			role: "user",
-			content: "Explain adapters in TypeScript.",
+			role: 'user',
+			content: 'Explain adapters in TypeScript.',
 		},
 	],
 });
@@ -47,11 +35,13 @@ const result = await llm.chat({
 console.log(result.text);
 
 const resultAnthropic = await llm.chat({
-	provider: "anthropic",
+	// This is suppoosed to give an error if types are set up correctly
+	// @ts-expect-error Its for testing provider types
+	provider: 'anthropic',
 	messages: [
 		{
-			role: "user",
-			content: "Review this architecture.",
+			role: 'user',
+			content: 'Review this architecture.',
 		},
 	],
 });
