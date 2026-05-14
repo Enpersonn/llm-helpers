@@ -1,0 +1,13 @@
+{
+	"name": "demo-space",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "tsx src/index.ts"
+	},
+	"dependencies": {
+		"an-llm-request-router": "workspace:*",
+		"dotenv": "^17.4.2"
+	}
+}

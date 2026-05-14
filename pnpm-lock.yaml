@@ -21,14 +21,23 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  apps/demo-space:
+    dependencies:
+      an-llm-request-router:
+        specifier: workspace:*
+        version: link:../../packages/an-llm-request-router
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+
   packages/an-llm-request-router:
     dependencies:
       '@google/genai':
         specifier: ^2.2.0
         version: 2.2.0
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
+      openai:
+        specifier: ^6.37.0
+        version: 6.37.0(ws@8.20.1)(zod@4.4.3)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -391,6 +400,18 @@ packages:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  openai@6.37.0:
+    resolution: {integrity: sha512-0H5dEGFmmLv6KSd0W1w2nyL8WsLkX6yoLeQpU+dZAOuGcany5qkYQMmj35ZrKgb6yiyYqpUzFOpR8mZQkgqeEQ==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   p-retry@4.6.2:
     resolution: {integrity: sha512-312Id396EbJdvRONlngUx0NydfrIQ5lsYu0znKVUzVvArzEIt08V1qhtyESbGVd1FGX7UKtiFp5uwKZdM8wIuQ==}
     engines: {node: '>=8'}
@@ -718,6 +739,11 @@ snapshots:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+
+  openai@6.37.0(ws@8.20.1)(zod@4.4.3):
+    optionalDependencies:
+      ws: 8.20.1
+      zod: 4.4.3
 
   p-retry@4.6.2:
     dependencies:

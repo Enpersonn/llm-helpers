@@ -1,33 +1,27 @@
 import type { z } from 'zod';
 import type { LLMMessage } from './index.js';
 
-export type LLMRequest<P extends string> = {
-	provider?: P;
+export type LLMRequest = {
 	model?: string;
 	messages: LLMMessage[];
 	temperature?: number;
 	maxTokens?: number;
-	stream?: boolean;
-	json?: boolean;
 	signal?: AbortSignal;
 };
 
-export type LLMEmbedRequest<P extends string> = {
-	provider?: P;
+export type LLMEmbedRequest = {
 	model?: string;
 	input: string;
 	signal?: AbortSignal;
 };
 
-export type LLMBatchEmbedRequest<P extends string> = {
-	provider?: P;
+export type LLMBatchEmbedRequest = {
 	model?: string;
 	input: string[];
 	signal?: AbortSignal;
 };
 
-export type LLMJsonRequest<P extends string, TSchema extends z.ZodTypeAny = z.ZodTypeAny> = {
-	provider?: P;
+export type LLMJsonRequest<TSchema extends z.ZodTypeAny = z.ZodTypeAny> = {
 	model?: string;
 	messages: LLMMessage[];
 	schema?: TSchema;

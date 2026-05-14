@@ -1,12 +1,31 @@
+import type z from 'zod';
 import type { LLMStreamChunk } from './llm.js';
-import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMRequest } from './requests.js';
-import type { LLMBatchEmbedResponse, LLMEmbedResponse } from './response.js';
+import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest } from './requests.js';
+import type { LLMBatchEmbedResponse, LLMEmbedResponse, LLMJsonResponse, LLMResponse } from './response.js';
 
-export type StreamingProvider<P extends string> = {
-	stream(request: LLMRequest<P>): AsyncIterable<LLMStreamChunk>;
+export type ProviderRequest<N extends string, Req, Res> = {
+	[K in N]: (request: Req) => Res;
 };
 
-export type EmbeddingProvider<P extends string> = {
-	embed(request: LLMEmbedRequest<P>): Promise<LLMEmbedResponse>;
-	embedMany?(request: LLMBatchEmbedRequest<P>): Promise<LLMBatchEmbedResponse>;
+export type ChatProvider = ProviderRequest<'chat', LLMRequest, Promise<LLMResponse>>;
+
+export type JsonProvider = {
+	json<TSchema extends z.ZodTypeAny>(request: LLMJsonRequest<TSchema>): Promise<LLMJsonResponse<z.infer<TSchema>>>;
 };
+
+export type StreamingProvider = ProviderRequest<'stream', LLMRequest, AsyncIterable<LLMStreamChunk>>;
+
+export type EmbeddingProvider = ProviderRequest<'embed', LLMEmbedRequest, Promise<LLMEmbedResponse>>;
+export type EmbeddingBatchProvider = ProviderRequest<'embedMany', LLMBatchEmbedRequest, Promise<LLMBatchEmbedResponse>>;
+
+export type VisionRequest = {
+    image: Uint8Array;
+    prompt: string;
+};
+
+export type VisionResponse = {
+    text: string;
+    raw?: unknown;
+};
+
+export type VisionProvider = ProviderRequest<'vision', VisionRequest, Promise<VisionResponse>>;

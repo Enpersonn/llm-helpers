@@ -4,18 +4,30 @@
 	"type": "module",
 	"description": "",
 	"exports": {
-		".": "./dist/index.js"
+		".": "./dist/index.js",
+		"./openai": "./dist/adapters/openAi.js",
+		"./gemini": "./dist/adapters/gemini.js",
+		"./ollama": "./dist/adapters/ollama.js"
 	},
 	"scripts": {
-		"build": "tsc",
-		"test:file": "tsx src/test.ts"
+		"build": "tsc"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"dependencies": {
+	"peerDependencies": {
 		"@google/genai": "^2.2.0",
-		"dotenv": "^17.4.2",
+		"openai": "^6.37.0"
+	},
+	"peerDependenciesMeta": {
+		"openai": {
+			"optional": true
+		},
+		"@google/genai": {
+			"optional": true
+		}
+	},
+	"dependencies": {
 		"zod": "^4.4.3"
 	}
 }

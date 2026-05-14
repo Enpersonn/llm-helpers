@@ -1,19 +1,10 @@
-import type { output, ZodType } from 'zod';
 import { type InternalAdapters, internalAdapters } from './adapters/index.js';
 import type {
 	AdapterRegistry,
-	CreatedAdapter,
 	FactoryConfig,
 	LLMConfig,
-	LLMEmbedRequest,
-	LLMEmbedResponse,
-	LLMJsonRequest,
-	LLMJsonResponse,
-	LLMProvider,
-	LLMRequest,
-	LLMResponse,
-	LLMStreamChunk,
 	MergeRegistries,
+	Middleware,
 	ProviderConfigs,
 } from './types/index.js';
 
@@ -21,13 +12,13 @@ export function createLLM<
 	const TCustom extends AdapterRegistry = {},
 	const TRegistry extends AdapterRegistry = MergeRegistries<InternalAdapters, TCustom>,
 	const TProviders extends ProviderConfigs<TRegistry> = ProviderConfigs<TRegistry>,
->(config: LLMConfig<TRegistry, TProviders>, customAdapters?: TCustom) {
+>(config: LLMConfig<TRegistry, TProviders>, options?: { adapters?: TCustom; middleware?: Middleware }) {
 	const registry = {
 		...internalAdapters,
-		...customAdapters,
+		...options?.adapters,
 	} as unknown as TRegistry;
 
-	return new LLM(registry, config);
+	return new LLM(registry, config, options?.middleware);
 }
 
 export class LLM<
@@ -35,8 +26,9 @@ export class LLM<
 	TProviders extends Partial<{
 		[K in keyof TRegistry]: FactoryConfig<TRegistry[K]>;
 	}>,
-> implements LLMProvider<Extract<keyof TProviders, string>>
-{
+> {
+	private cache = new Map<string, unknown>();
+
 	constructor(
 		private registry: TRegistry,
 		private config: {
@@ -47,22 +39,16 @@ export class LLM<
 				maxTokens?: number;
 			};
 		},
+		private middleware?: Middleware,
 	) {}
 
-	private getProvider(name?: Extract<keyof TProviders, string>) {
-		const providerName = name ?? this.config.defaultProvider;
+	use<TName extends Extract<keyof TProviders, string> & keyof TRegistry>(
+		name: TName,
+	): TName extends keyof TRegistry ? ReturnType<TRegistry[TName]['create']> : never {
+		type Result = TName extends keyof TRegistry ? ReturnType<TRegistry[TName]['create']> : never;
 
-		const factory = this.registry[providerName];
-		const providerConfig = this.config.providers[providerName];
+		if (this.cache.has(name)) return this.cache.get(name) as Result;
 
-		if (!providerConfig) {
-			throw new Error(`Missing config for provider: ${String(providerName)}`);
-		}
-
-		return factory.create(providerConfig);
-	}
-
-	use<TName extends Extract<keyof TProviders, string>>(name: TName): CreatedAdapter<TRegistry, TName> {
 		const factory = this.registry[name];
 		const providerConfig = this.config.providers[name];
 
@@ -70,60 +56,23 @@ export class LLM<
 			throw new Error(`Missing config for provider: ${String(name)}`);
 		}
 
-		return factory.create(providerConfig) as CreatedAdapter<TRegistry, TName>;
-	}
+		let adapter: Result = factory.create(providerConfig) as Result;
 
-	async chat(request: LLMRequest<Extract<keyof TProviders, string>>): Promise<LLMResponse> {
-		const provider = this.getProvider(request.provider);
-
-		return provider.chat({
-			...request,
-			model:
-				request.model ?? this.config.providers[provider.provider as Extract<keyof TProviders, string>]?.model,
-		});
-	}
-
-	json<TSchema extends ZodType>(
-		request: LLMJsonRequest<Extract<keyof TProviders, string>, TSchema>,
-	): Promise<LLMJsonResponse<output<TSchema>>> {
-		const provider = this.getProvider(request.provider);
-
-		if (!provider.json) {
-			throw new Error(`Provider ${provider.provider} does not support json returns`);
+		if (this.middleware) {
+			const mw = this.middleware;
+			adapter = Object.fromEntries(
+				Object.entries(adapter as object).map(([key, value]) => [
+					key,
+					typeof value === 'function' ? mw(value as (...args: unknown[]) => unknown, { provider: name, method: key }) : value,
+				]),
+			) as Result;
 		}
 
-		return provider.json({
-			...request,
-			model:
-				request.model ?? this.config.providers[provider.provider as Extract<keyof TProviders, string>]?.model,
-		});
+		this.cache.set(name, adapter);
+		return adapter;
 	}
 
-	stream(request: LLMRequest<Extract<keyof TProviders, string>>): AsyncIterable<LLMStreamChunk> {
-		const provider = this.getProvider(request.provider);
-
-		if (!provider.stream) {
-			throw new Error(`Provider ${provider.provider} does not support streaming`);
-		}
-
-		return provider.stream({
-			...request,
-			model:
-				request.model ?? this.config.providers[provider.provider as Extract<keyof TProviders, string>]?.model,
-		});
-	}
-
-	embed(request: LLMEmbedRequest<Extract<keyof TProviders, string>>): Promise<LLMEmbedResponse> {
-		const provider = this.getProvider(request.provider);
-
-		if (!provider.embed) {
-			throw new Error(`Provider ${provider.provider} does not support embeding`);
-		}
-
-		return provider.embed({
-			...request,
-			model:
-				request.model ?? this.config.providers[provider.provider as Extract<keyof TProviders, string>]?.model,
-		});
+	default() {
+		return this.use(this.config.defaultProvider);
 	}
 }

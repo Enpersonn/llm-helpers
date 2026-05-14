@@ -1,0 +1,15 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"rootDir": "src",
+		"paths": {
+			"an-llm-request-router": [
+				"../../packages/an-llm-request-router/src/index.ts"
+			]
+		}
+	},
+	"include": [
+		"src"
+	]
+}

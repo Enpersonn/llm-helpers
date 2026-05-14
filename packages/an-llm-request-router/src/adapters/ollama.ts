@@ -1,24 +1,12 @@
-import type { AdapterFactory, InternalLLMAdapter } from '../types/index.js';
+import type { ChatProvider, StreamingProvider } from '../types/providers.js';
+import { adapterFactory } from './factory.js';
 
-type OllamaConfig = {
-	endpoint?: string;
-	model: string;
-};
+type OllamaAdapter = ChatProvider & StreamingProvider;
 
-export const ollamaFactory = {
-	provider: 'ollama',
-
-	create(config: OllamaConfig) {
-		return createOllamaAdapter(config);
-	},
-} satisfies AdapterFactory<'ollama', OllamaConfig>;
-
-export function createOllamaAdapter(config: OllamaConfig): InternalLLMAdapter<'ollama', OllamaConfig> {
+export const ollamaFactory = adapterFactory('ollama', (config: { endpoint?: string; model: string }): OllamaAdapter => {
 	const endpoint = config.endpoint ?? 'http://localhost:11434/api/chat';
 
 	return {
-		provider: 'ollama',
-		config,
 		async chat(request) {
 			const res = await fetch(endpoint, {
 				method: 'POST',
@@ -30,7 +18,6 @@ export function createOllamaAdapter(config: OllamaConfig): InternalLLMAdapter<'o
 					model: request.model ?? config.model,
 					messages: request.messages,
 					stream: false,
-					format: request.json ? 'json' : undefined,
 					options: {
 						temperature: request.temperature,
 						num_predict: request.maxTokens,
@@ -67,7 +54,6 @@ export function createOllamaAdapter(config: OllamaConfig): InternalLLMAdapter<'o
 					model: request.model ?? config.model,
 					messages: request.messages,
 					stream: true,
-					format: request.json ? 'json' : undefined,
 					options: {
 						temperature: request.temperature,
 						num_predict: request.maxTokens,
@@ -120,4 +106,4 @@ export function createOllamaAdapter(config: OllamaConfig): InternalLLMAdapter<'o
 			}
 		},
 	};
-}
+});

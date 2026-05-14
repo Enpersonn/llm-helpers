@@ -1,45 +1,27 @@
-import { GoogleGenAI } from '@google/genai';
+import type { LLMMessage } from '../types/index.js';
+import type { ChatProvider, StreamingProvider, VisionProvider } from '../types/providers.js';
+import { adapterFactory } from './factory.js';
 
-import type { AdapterFactory, InternalLLMAdapter, LLMMessage } from '../types/index.js';
+type GeminiAdapter = ChatProvider & StreamingProvider & VisionProvider;
 
-type GeminiConfig = {
-	apiKey: string;
-	model: string;
-};
+export const geminiFactory = adapterFactory('gemini', (config: { apiKey: string; model: string }): GeminiAdapter => {
+	let ai: import('@google/genai').GoogleGenAI | undefined;
 
-type VisionRequest = {
-	image: Uint8Array;
-	prompt: string;
-};
+	async function getClient() {
+		if (ai) return ai;
 
-type VisionResponse = {
-	text: string;
-	raw?: unknown;
-};
+		const { GoogleGenAI } = await import('@google/genai');
 
-type GeminiAdapter = InternalLLMAdapter<'gemini', GeminiConfig> & VisionProvider;
+		ai = new GoogleGenAI({
+			apiKey: config.apiKey,
+		});
 
-type VisionProvider = {
-	vision(request: VisionRequest): Promise<VisionResponse>;
-};
-export const geminiFactory = {
-	provider: 'gemini',
-
-	create(config: GeminiConfig): GeminiAdapter {
-		return createGeminiAdapter(config);
-	},
-} satisfies AdapterFactory<'gemini', GeminiConfig>;
-
-export function createGeminiAdapter(config: GeminiConfig): GeminiAdapter {
-	const ai = new GoogleGenAI({
-		apiKey: config.apiKey,
-	});
+		return ai;
+	}
 
 	return {
-		provider: 'gemini',
-		config,
-
 		async chat(request) {
+			const ai = await getClient();
 			const model = request.model ?? config.model;
 
 			const response = await ai.models.generateContent({
@@ -50,19 +32,19 @@ export function createGeminiAdapter(config: GeminiConfig): GeminiAdapter {
 				config: {
 					temperature: request.temperature,
 					maxOutputTokens: request.maxTokens,
-					responseMimeType: request.json ? 'application/json' : 'text/plain',
 				},
 			});
 
 			return {
-				provider: 'gemini',
-				model,
 				text: response.text ?? '',
+				model,
+				provider: 'gemini',
 				raw: response,
 			};
 		},
 
 		async *stream(request) {
+			const ai = await getClient();
 			const model = request.model ?? config.model;
 
 			const response = await ai.models.generateContentStream({
@@ -73,7 +55,6 @@ export function createGeminiAdapter(config: GeminiConfig): GeminiAdapter {
 				config: {
 					temperature: request.temperature,
 					maxOutputTokens: request.maxTokens,
-					responseMimeType: request.json ? 'application/json' : 'text/plain',
 				},
 			});
 
@@ -98,7 +79,7 @@ export function createGeminiAdapter(config: GeminiConfig): GeminiAdapter {
 			};
 		},
 	};
-}
+});
 
 function toGeminiContents(messages: LLMMessage[]) {
 	return messages.map((message) => ({

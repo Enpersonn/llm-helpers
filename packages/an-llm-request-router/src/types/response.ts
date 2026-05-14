@@ -1,4 +1,3 @@
-import type { InternalAdapters } from '../adapters/index.js';
 import type { LLMUsage } from './index.js';
 
 export type LLMResponse = {
@@ -6,13 +5,14 @@ export type LLMResponse = {
 	model?: string;
 	provider: string;
 	raw?: unknown;
+	usage?: LLMUsage;
 };
 
 export type LLMJsonResponse<T = unknown> = {
 	json: T;
 	text: string;
 	model?: string;
-	provider: InternalAdapters;
+	provider: string;
 	raw?: unknown;
 	usage?: LLMUsage;
 };
@@ -20,7 +20,7 @@ export type LLMJsonResponse<T = unknown> = {
 export type LLMEmbedResponse = {
 	embedding: number[];
 	model?: string;
-	provider: InternalAdapters;
+	provider: string;
 	raw?: unknown;
 	usage?: LLMUsage;
 };
@@ -28,7 +28,7 @@ export type LLMEmbedResponse = {
 export type LLMBatchEmbedResponse = {
 	embeddings: number[][];
 	model?: string;
-	provider: InternalAdapters;
+	provider: string;
 	raw?: unknown;
 	usage?: LLMUsage;
 };
