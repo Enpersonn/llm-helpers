@@ -7,12 +7,15 @@
 		".": "./dist/index.js"
 	},
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"test:file": "tsx src/test.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@google/genai": "^2.2.0",
+		"dotenv": "^17.4.2",
 		"zod": "^4.4.3"
 	}
 }

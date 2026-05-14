@@ -34,10 +34,6 @@ export interface LLMProvider<TRegistry extends string> {
 	stream?(request: LLMRequest<TRegistry>): AsyncIterable<LLMStreamChunk>;
 }
 
-type ProviderKey<TRegistry extends AdapterRegistry> = Extract<keyof TRegistry, string>;
-
-export type EnabledProvider<TConfig> = TConfig extends { providers: infer P } ? Extract<keyof P, string> : never;
-
 export type FactoryConfig<T> = T extends AdapterFactory<any, infer TConfig> ? TConfig : never;
 
 export type AdapterRegistry = Record<string, AdapterFactory<string, any>>;
@@ -48,11 +44,17 @@ export type MergeRegistries<TBase extends AdapterRegistry, TCustom extends Adapt
 > &
 	TCustom;
 
-export type LLMConfig<TRegistry extends AdapterRegistry> = {
-	defaultProvider: ProviderKey<TRegistry>;
+export type ProviderConfigs<TRegistry extends AdapterRegistry> = Partial<{
+	[K in keyof TRegistry]: FactoryConfig<TRegistry[K]>;
+}>;
 
-	providers: {
-		[K in keyof TRegistry]: FactoryConfig<TRegistry[K]>;
+type NoExtraProviderKeys<TProviders, TRegistry extends AdapterRegistry> =
+	Exclude<keyof TProviders, keyof TRegistry> extends never ? TProviders : never;
+
+export type LLMConfig<TRegistry extends AdapterRegistry, TProviders extends ProviderConfigs<TRegistry>> = {
+	defaultProvider: Extract<keyof TProviders, string>;
+	providers: NoExtraProviderKeys<TProviders, TRegistry> & {
+		[K in keyof TProviders]: K extends keyof TRegistry ? FactoryConfig<TRegistry[K]> : never;
 	};
 
 	defaults?: {

@@ -1,22 +1,49 @@
-import { LLM } from './llm.js';
+import dotenv from 'dotenv';
 
-const llm = new LLM({
+dotenv.config({ path: 'packages/an-llm-request-router/.env' });
+
+import { createLLM } from './llm.js';
+
+const llm = createLLM({
 	defaultProvider: 'ollama',
 
 	providers: {
 		ollama: {
 			model: 'gemma4',
 		},
+		gemini: {
+			apiKey: process.env.GEMINI_API_KEY!,
+			model: 'gemini-2.5-flash',
+		},
 	},
 });
 
-const result = await llm.chat({
+const stream = llm.stream({
 	messages: [
 		{
 			role: 'user',
-			content: 'Explain adapters in TypeScript.',
+			content: 'Roses are red',
 		},
 	],
 });
 
-console.log(result.text);
+for await (const chunk of stream) {
+	process.stdout.write(chunk.text);
+
+	if (chunk.done) {
+		process.stdout.write('\n');
+	}
+}
+
+const gemini = llm.use('gemini');
+
+const testGeminiRes = await gemini.chat({
+	messages: [
+		{
+			role: 'user',
+			content: 'explain sleeping beauty in one paragraph',
+		},
+	],
+});
+
+console.log(testGeminiRes.text);
