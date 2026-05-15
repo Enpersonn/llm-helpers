@@ -11,5 +11,8 @@ export const openAi = adapterFactory('openai', (config: { apiKey: string; model:
 		return client;
 	}
 
-	return makeOpenAICompatMethods(getClient, 'openai', () => config.model);
+	return {
+		capabilities: { nativeThinking: false, streaming: true, vision: true },
+		...makeOpenAICompatMethods(getClient, 'openai', () => config.model),
+	};
 });

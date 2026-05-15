@@ -1,5 +1,5 @@
+import type { ChatProvider, JsonProvider, StreamingProvider, ToolProvider } from '@llm-helpers/types';
 import { adapterFactory } from '../../core/factory.js';
-import type { ChatProvider, JsonProvider, StreamingProvider, ToolProvider } from '../../types/providers.js';
 import { makeOpenAICompatMethods } from '../util/openai-compat.js';
 
 type GroqAdapter = ChatProvider & StreamingProvider & JsonProvider & ToolProvider;
@@ -16,5 +16,11 @@ export const groq = adapterFactory('groq', (config: { apiKey: string; model: str
 
 	const { chat, stream, json, tool } = makeOpenAICompatMethods(getClient, 'groq', () => config.model);
 
-	return { chat, stream, json, tool };
+	return {
+		capabilities: { nativeThinking: false, streaming: true, vision: false },
+		chat,
+		stream,
+		json,
+		tool,
+	};
 });

@@ -28,6 +28,12 @@ export const cohere = adapterFactory('cohere', (config: { apiKey: string; model:
 	}
 
 	return {
+		capabilities: {
+			nativeThinking: false,
+			streaming: true,
+			vision: false,
+		},
+
 		async chat(request) {
 			const co = await getClient();
 			const model = request.model ?? config.model;

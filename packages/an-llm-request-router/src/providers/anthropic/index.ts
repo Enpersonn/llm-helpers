@@ -23,6 +23,12 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 	}
 
 	return {
+		capabilities: {
+			nativeThinking: true,
+			streaming: true,
+			vision: true,
+		},
+
 		async chat(request) {
 			const client = await getClient();
 			const model = request.model ?? config.model;
@@ -155,6 +161,7 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 			const client = await getClient();
 			const model = request.model ?? config.model;
 			const { system, messages } = toAnthropicMessages(request.messages);
+			const thinkingEnabled = !!request.thinking?.budgetTokens;
 
 			const tools = request.tools.map((t) => ({
 				name: t.name,
@@ -167,12 +174,18 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 				{
 					model,
 					max_tokens: request.maxTokens ?? 1024,
-					temperature: request.temperature,
+					// Anthropic requires temperature=1 when extended thinking is enabled
+					temperature: thinkingEnabled ? 1 : request.temperature,
 					...(system ? { system } : {}),
 					messages,
 					tools,
+					// biome-ignore lint/suspicious/noExplicitAny: thinking param not yet in SDK types
+					...(thinkingEnabled ? { thinking: { type: 'enabled', budget_tokens: request.thinking?.budgetTokens ?? 1024 } as any } : {}),
 				},
-				{ signal: request.signal },
+				{
+					signal: request.signal,
+					...(thinkingEnabled ? { headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' } } : {}),
+				},
 			);
 
 			const toolCalls: ToolCall[] = response.content
@@ -183,6 +196,10 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 					return { id: tu.id ?? `call_${i}`, name: tu.name, arguments: tu.input as Record<string, unknown> };
 				});
 
+			// biome-ignore lint/suspicious/noExplicitAny: thinking block type not in SDK types
+			const thinkingParts = response.content.filter((b) => b.type === 'thinking').map((b) => (b as any).thinking as string);
+			const thinkingContent = thinkingParts.length > 0 ? thinkingParts.join('') : undefined;
+
 			return {
 				text: extractText(response.content),
 				model,
@@ -190,6 +207,7 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 				raw: response,
 				toolCalls,
 				finishReason: toolCalls.length > 0 ? 'tool_calls' : 'stop',
+				thinkingContent,
 				usage: {
 					inputTokens: response.usage.input_tokens,
 					outputTokens: response.usage.output_tokens,

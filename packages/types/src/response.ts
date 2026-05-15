@@ -6,6 +6,7 @@ export type LLMResponse = {
 	provider: string;
 	raw?: unknown;
 	usage?: LLMUsage;
+	thinkingContent?: string;
 };
 
 export type LLMJsonResponse<T = unknown> = {
@@ -41,4 +42,5 @@ export type LLMToolResponse = {
 	usage?: LLMUsage;
 	toolCalls: ToolCall[];
 	finishReason: 'stop' | 'tool_calls';
+	thinkingContent?: string;
 };

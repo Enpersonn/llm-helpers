@@ -1,12 +1,17 @@
 import type { z } from 'zod';
 import type { LLMMessage, ToolDefinition } from './providers.js';
 
+export type ThinkingConfig = {
+	budgetTokens?: number;
+};
+
 export type LLMRequest = {
 	model?: string;
 	messages: LLMMessage[];
 	temperature?: number;
 	maxTokens?: number;
 	signal?: AbortSignal;
+	thinking?: ThinkingConfig;
 };
 
 export type LLMEmbedRequest = {

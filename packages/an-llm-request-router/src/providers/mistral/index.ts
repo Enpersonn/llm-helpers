@@ -1,5 +1,3 @@
-import { adapterFactory } from '../../core/factory.js';
-import { makeOpenAICompatMethods } from '../util/openai-compat.js';
 import type {
 	ChatProvider,
 	EmbeddingBatchProvider,
@@ -7,7 +5,9 @@ import type {
 	JsonProvider,
 	StreamingProvider,
 	ToolProvider,
-} from '../../types/providers.js';
+} from '@llm-helpers/types';
+import { adapterFactory } from '../../core/factory.js';
+import { makeOpenAICompatMethods } from '../util/openai-compat.js';
 
 type MistralAdapter = ChatProvider &
 	StreamingProvider &
@@ -32,5 +32,13 @@ export const mistral = adapterFactory('mistral', (config: { apiKey: string; mode
 		() => config.model,
 	);
 
-	return { chat, stream, embed, embedMany, json, tool };
+	return {
+		capabilities: { nativeThinking: false, streaming: true, vision: false },
+		chat,
+		stream,
+		embed,
+		embedMany,
+		json,
+		tool,
+	};
 });

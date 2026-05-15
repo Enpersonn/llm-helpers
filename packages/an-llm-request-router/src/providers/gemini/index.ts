@@ -31,6 +31,12 @@ export const gemini = adapterFactory('gemini', (config: { apiKey: string; model:
 	}
 
 	return {
+		capabilities: {
+			nativeThinking: true,
+			streaming: true,
+			vision: true,
+		},
+
 		async chat(request) {
 			const ai = await getClient();
 			const model = request.model ?? config.model;
@@ -206,6 +212,9 @@ export const gemini = adapterFactory('gemini', (config: { apiKey: string; model:
 					abortSignal: request.signal,
 					tools,
 					...(systemInstruction ? { systemInstruction } : {}),
+					...(request.thinking?.budgetTokens != null
+						? { thinkingConfig: { thinkingBudget: request.thinking.budgetTokens } }
+						: {}),
 				},
 			});
 
@@ -221,6 +230,9 @@ export const gemini = adapterFactory('gemini', (config: { apiKey: string; model:
 					arguments: (p.functionCall.args ?? {}) as Record<string, unknown>,
 				}));
 
+			const thinkingParts = parts.filter((p) => p.thought === true).map((p) => p.text ?? '');
+			const thinkingContent = thinkingParts.length > 0 ? thinkingParts.join('') : undefined;
+
 			return {
 				text: response.text ?? '',
 				model,
@@ -228,6 +240,7 @@ export const gemini = adapterFactory('gemini', (config: { apiKey: string; model:
 				raw: response,
 				toolCalls,
 				finishReason: toolCalls.length > 0 ? 'tool_calls' : 'stop',
+				thinkingContent,
 				usage: {
 					inputTokens: response.usageMetadata?.promptTokenCount,
 					outputTokens: response.usageMetadata?.candidatesTokenCount,

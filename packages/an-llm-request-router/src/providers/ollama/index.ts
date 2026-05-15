@@ -35,6 +35,12 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 	}
 
 	return {
+		capabilities: {
+			nativeThinking: false,
+			streaming: true,
+			vision: true,
+		},
+
 		async chat(request) {
 			const model = request.model ?? config.model;
 

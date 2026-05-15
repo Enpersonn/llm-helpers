@@ -23,5 +23,8 @@ export const azure = adapterFactory('azure', (config: AzureConfig): OpenAICompat
 		return client;
 	}
 
-	return makeOpenAICompatMethods(getClient, 'azure', () => config.deployment);
+	return {
+		capabilities: { nativeThinking: false, streaming: true, vision: false },
+		...makeOpenAICompatMethods(getClient, 'azure', () => config.deployment),
+	};
 });

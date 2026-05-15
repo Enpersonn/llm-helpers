@@ -35,7 +35,15 @@ export type VisionResponse = {
 
 export type VisionProvider = ProviderRequest<'vision', VisionRequest, Promise<VisionResponse>>;
 
-export type ToolProvider = ProviderRequest<'tool', LLMToolRequest, Promise<LLMToolResponse>>;
+export type ProviderCapabilities = {
+	nativeThinking: boolean;
+	streaming: boolean;
+	vision: boolean;
+};
+
+export type ToolProvider = ProviderRequest<'tool', LLMToolRequest, Promise<LLMToolResponse>> & {
+	capabilities?: ProviderCapabilities;
+};
 
 export type ToolDefinition = {
 	name: string;
