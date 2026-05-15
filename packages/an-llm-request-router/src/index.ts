@@ -1,11 +1,2 @@
-export { adapterFactory } from './adapters/factory.js';
-export { geminiFactory } from './adapters/gemini.js';
-export { ollamaFactory } from './adapters/ollama.js';
-export { openaiFactory } from './adapters/openAi.js';
-export { isChatProvider, isEmbeddingBatchProvider, isEmbeddingProvider, isJsonProvider, isStreamingProvider, isVisionProvider } from './guards.js';
-export { createLLM, LLM } from './llm.js';
-export type { AdapterFactory, CreatedAdapter, LLMAdapter } from './types/adapter.js';
-export type { AdapterRegistry, FactoryConfig, LLMMessage, LLMStreamChunk, LLMUsage, Middleware } from './types/llm.js';
-export type { ChatProvider, EmbeddingBatchProvider, EmbeddingProvider, JsonProvider, ProviderRequest, StreamingProvider, VisionProvider, VisionRequest, VisionResponse } from './types/providers.js';
-export type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest } from './types/requests.js';
-export type { LLMBatchEmbedResponse, LLMEmbedResponse, LLMJsonResponse, LLMResponse } from './types/response.js';
+export * from './core/index.js';
+export type * from './types/index.js';

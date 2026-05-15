@@ -23,7 +23,7 @@ importers:
 
   apps/demo-space:
     dependencies:
-      an-llm-request-router:
+      '@llm-helpers/an-llm-request-router':
         specifier: workspace:*
         version: link:../../packages/an-llm-request-router
       dotenv:

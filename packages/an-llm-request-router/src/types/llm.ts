@@ -1,8 +1,23 @@
 import type { AdapterFactory } from './adapter.js';
 
+export type ToolDefinition = {
+	name: string;
+	description?: string;
+	parameters?: Record<string, unknown>;
+};
+
+export type ToolCall = {
+	id: string;
+	name: string;
+	arguments: Record<string, unknown>;
+};
+
 export type LLMMessage = {
-	role: 'system' | 'user' | 'assistant';
+	role: 'system' | 'user' | 'assistant' | 'tool';
 	content: string;
+	toolCalls?: ToolCall[];
+	toolCallId?: string;
+	toolName?: string;
 };
 
 export type LLMUsage = {
@@ -21,12 +36,6 @@ export type FactoryConfig<T> = T extends AdapterFactory<string, infer TConfig> ?
 
 // biome-ignore lint/suspicious/noExplicitAny: registry must remain open to factories with any config type (contravariant parameter position)
 export type AdapterRegistry = Record<string, AdapterFactory<string, any>>;
-
-export type MergeRegistries<TBase extends AdapterRegistry, TCustom extends AdapterRegistry> = Omit<
-	TBase,
-	keyof TCustom
-> &
-	TCustom;
 
 export type ProviderConfigs<TRegistry extends AdapterRegistry> = Partial<{
 	[K in keyof TRegistry]: FactoryConfig<TRegistry[K]>;

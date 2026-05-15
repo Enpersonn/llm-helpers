@@ -1,4 +1,4 @@
-import type { LLMUsage } from './index.js';
+import type { LLMUsage, ToolCall } from './index.js';
 
 export type LLMResponse = {
 	text: string;
@@ -31,4 +31,14 @@ export type LLMBatchEmbedResponse = {
 	provider: string;
 	raw?: unknown;
 	usage?: LLMUsage;
+};
+
+export type LLMToolResponse = {
+	text: string;
+	model?: string;
+	provider: string;
+	raw?: unknown;
+	usage?: LLMUsage;
+	toolCalls: ToolCall[];
+	finishReason: 'stop' | 'tool_calls';
 };

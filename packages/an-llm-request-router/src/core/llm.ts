@@ -1,20 +1,11 @@
-import { type InternalAdapters, internalAdapters } from './adapters/index.js';
-import type {
-	AdapterRegistry,
-	FactoryConfig,
-	LLMConfig,
-	MergeRegistries,
-	Middleware,
-	ProviderConfigs,
-} from './types/index.js';
+import type { AdapterRegistry, FactoryConfig, LLMConfig, Middleware, ProviderConfigs } from '../types/index.js';
 
 export function createLLM<
 	const TCustom extends AdapterRegistry = {},
-	const TRegistry extends AdapterRegistry = MergeRegistries<InternalAdapters, TCustom>,
+	const TRegistry extends AdapterRegistry = TCustom,
 	const TProviders extends ProviderConfigs<TRegistry> = ProviderConfigs<TRegistry>,
 >(config: LLMConfig<TRegistry, TProviders>, options?: { adapters?: TCustom; middleware?: Middleware }) {
 	const registry = {
-		...internalAdapters,
 		...options?.adapters,
 	} as unknown as TRegistry;
 
@@ -63,7 +54,9 @@ export class LLM<
 			adapter = Object.fromEntries(
 				Object.entries(adapter as object).map(([key, value]) => [
 					key,
-					typeof value === 'function' ? mw(value as (...args: unknown[]) => unknown, { provider: name, method: key }) : value,
+					typeof value === 'function'
+						? mw(value as (...args: unknown[]) => unknown, { provider: name, method: key })
+						: value,
 				]),
 			) as Result;
 		}

@@ -1,7 +1,7 @@
 import type z from 'zod';
 import type { LLMStreamChunk } from './llm.js';
-import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest } from './requests.js';
-import type { LLMBatchEmbedResponse, LLMEmbedResponse, LLMJsonResponse, LLMResponse } from './response.js';
+import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest, LLMToolRequest } from './requests.js';
+import type { LLMBatchEmbedResponse, LLMEmbedResponse, LLMJsonResponse, LLMResponse, LLMToolResponse } from './response.js';
 
 export type ProviderRequest<N extends string, Req, Res> = {
 	[K in N]: (request: Req) => Res;
@@ -29,3 +29,5 @@ export type VisionResponse = {
 };
 
 export type VisionProvider = ProviderRequest<'vision', VisionRequest, Promise<VisionResponse>>;
+
+export type ToolProvider = ProviderRequest<'tool', LLMToolRequest, Promise<LLMToolResponse>>;

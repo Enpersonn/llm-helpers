@@ -1,4 +1,11 @@
-import { createLLM, isChatProvider, isStreamingProvider, ollamaFactory } from 'an-llm-request-router';
+import { createLLM, isChatProvider, isStreamingProvider } from '@llm-helpers/an-llm-request-router';
+import { geminiFactory } from '@llm-helpers/an-llm-request-router/gemini';
+import { ollamaFactory } from '@llm-helpers/an-llm-request-router/ollama';
+
+const availableAdapters = {
+	ollama: ollamaFactory,
+	gemini: geminiFactory,
+};
 
 export async function runLlmRouterDemos() {
 	const geminiKey = process.env.GEMINI_API_KEY;
@@ -13,11 +20,13 @@ export async function runLlmRouterDemos() {
 			},
 		},
 		{
-			middleware: (fn, { provider, method }) =>
+			middleware:
+				(fn, { provider, method }) =>
 				(...args) => {
 					console.log(`  [${provider}.${method}] called`);
 					return fn(...args);
 				},
+			adapters: availableAdapters,
 		},
 	);
 
@@ -29,10 +38,15 @@ export async function runLlmRouterDemos() {
 	}
 
 	console.log('\n[gemini chat via default()]');
-	const llmGemini = createLLM({
-		defaultProvider: 'gemini',
-		providers: { gemini: { apiKey: geminiKey, model: 'gemini-2.5-flash' } },
-	});
+	const llmGemini = createLLM(
+		{
+			defaultProvider: 'gemini',
+			providers: { gemini: { apiKey: geminiKey, model: 'gemini-2.5-flash' } },
+		},
+		{
+			adapters: availableAdapters,
+		},
+	);
 	const geminiRes = await llmGemini.default().chat({
 		messages: [{ role: 'user', content: 'Explain sleeping beauty in one paragraph.' }],
 	});

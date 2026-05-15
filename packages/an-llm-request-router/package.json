@@ -1,20 +1,30 @@
 {
-	"name": "an-llm-request-router",
+	"name": "@llm-helpers/an-llm-request-router",
 	"version": "1.0.0",
 	"type": "module",
 	"description": "",
 	"exports": {
-		".": "./dist/index.js",
-		"./openai": "./dist/adapters/openAi.js",
-		"./gemini": "./dist/adapters/gemini.js",
-		"./ollama": "./dist/adapters/ollama.js"
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./openai": {
+			"types": "./dist/providers/openAi/index.d.ts",
+			"import": "./dist/providers/openAi/index.js"
+		},
+		"./gemini": {
+			"types": "./dist/providers/gemini/index.d.ts",
+			"import": "./dist/providers/gemini/index.js"
+		},
+		"./ollama": {
+			"types": "./dist/providers/ollama/index.d.ts",
+			"import": "./dist/providers/ollama/index.js"
+		}
 	},
 	"scripts": {
 		"build": "tsc"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"author": "Enpersonn",
 	"peerDependencies": {
 		"@google/genai": "^2.2.0",
 		"openai": "^6.37.0"

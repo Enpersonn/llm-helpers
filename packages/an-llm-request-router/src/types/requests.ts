@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { LLMMessage } from './index.js';
+import type { LLMMessage, ToolDefinition } from './index.js';
 
 export type LLMRequest = {
 	model?: string;
@@ -28,4 +28,8 @@ export type LLMJsonRequest<TSchema extends z.ZodTypeAny = z.ZodTypeAny> = {
 	temperature?: number;
 	maxTokens?: number;
 	signal?: AbortSignal;
+};
+
+export type LLMToolRequest = LLMRequest & {
+	tools: ToolDefinition[];
 };
