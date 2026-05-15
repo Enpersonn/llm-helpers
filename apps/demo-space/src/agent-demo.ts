@@ -127,7 +127,7 @@ const tools = [
 
 export async function runAgentDemo() {
 	const provider = ollamaProvider.create({ model: MODEL });
-	const agent = createAgent(provider, tools);
+	const agent = createAgent(provider, tools, { maxSteps: 20 });
 
 	const messages = [
 		{
@@ -142,9 +142,12 @@ export async function runAgentDemo() {
 	console.log(`\nUsing model: ${MODEL}`);
 	console.log(`User: ${messages[0].content}\n`);
 
-	agent.bus.on('thinking', (e) => {
-		console.log(`  [thinking:${e.step}] ${e.content.slice(0, 120)}...`);
-	});
+	agent.bus.on('step_start', (e) => console.log(`\n--- step ${e.step} ---`));
+	agent.bus.on('thinking', (e) => console.log(`  [thinking:${e.step}] ${e.content.slice(0, 120)}...`));
+	agent.bus.on('tool_error', (e) => console.warn(`  [tool_error] ${e.toolName}:`, e.error));
+	agent.bus.on('complete', (e) =>
+		console.log(`\n[done] tokens: in=${e.totalUsage.inputTokens ?? 0} out=${e.totalUsage.outputTokens ?? 0}`),
+	);
 
 	const history = await agent.start({ messages });
 
