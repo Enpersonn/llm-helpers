@@ -2,7 +2,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { runLlmRouterDemos } from './llm-router.js';
+import { runAgentDemo } from './agent-demo.js';
 
-console.log('=== LLM Request Router ===');
-await runLlmRouterDemos();
+// import { runLlmRouterDemos } from './llm-router.js';
+
+// console.log('=== LLM Request Router ===');
+// await runLlmRouterDemos();
+
+console.log('\n=== Agent Runtime Handler ===');
+await runAgentDemo();

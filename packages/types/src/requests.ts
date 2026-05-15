@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { LLMMessage, ToolDefinition } from './index.js';
+import type { LLMMessage, ToolDefinition } from './providers.js';
 
 export type LLMRequest = {
 	model?: string;

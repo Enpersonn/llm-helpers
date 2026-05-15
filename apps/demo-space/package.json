@@ -7,6 +7,7 @@
 		"dev": "tsx src/index.ts"
 	},
 	"dependencies": {
+		"@llm-helpers/an-agent-runtime-handler": "workspace:*",
 		"@llm-helpers/an-llm-request-router": "workspace:*",
 		"dotenv": "^17.4.2"
 	}

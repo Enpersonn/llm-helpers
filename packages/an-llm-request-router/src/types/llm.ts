@@ -12,26 +12,6 @@ export type ToolCall = {
 	arguments: Record<string, unknown>;
 };
 
-export type LLMMessage = {
-	role: 'system' | 'user' | 'assistant' | 'tool';
-	content: string;
-	toolCalls?: ToolCall[];
-	toolCallId?: string;
-	toolName?: string;
-};
-
-export type LLMUsage = {
-	inputTokens?: number;
-	outputTokens?: number;
-	totalTokens?: number;
-};
-
-export type LLMStreamChunk = {
-	text: string;
-	done?: boolean;
-	raw?: unknown;
-};
-
 export type FactoryConfig<T> = T extends AdapterFactory<string, infer TConfig> ? TConfig : never;
 
 // biome-ignore lint/suspicious/noExplicitAny: registry must remain open to factories with any config type (contravariant parameter position)

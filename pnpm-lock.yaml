@@ -23,12 +23,21 @@ importers:
 
   apps/demo-space:
     dependencies:
+      '@llm-helpers/an-agent-runtime-handler':
+        specifier: workspace:*
+        version: link:../../packages/an-agent-runtime-handler
       '@llm-helpers/an-llm-request-router':
         specifier: workspace:*
         version: link:../../packages/an-llm-request-router
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
+
+  packages/an-agent-runtime-handler:
+    dependencies:
+      '@llm-helpers/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/an-llm-request-router:
     dependencies:
@@ -45,9 +54,18 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.96.0
         version: 0.96.0(zod@4.4.3)
+      '@llm-helpers/types':
+        specifier: workspace:*
+        version: link:../types
       cohere-ai:
         specifier: ^8.0.0
         version: 8.0.0
+
+  packages/types:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
 packages:
 

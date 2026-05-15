@@ -6,7 +6,7 @@ import type {
 	StreamingProvider,
 	ToolProvider,
 	VisionProvider,
-} from '../types/providers.js';
+} from '@llm-helpers/types';
 
 function hasMethod(x: unknown, method: string): boolean {
 	return (

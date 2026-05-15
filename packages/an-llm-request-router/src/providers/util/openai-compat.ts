@@ -1,13 +1,14 @@
-import type { LLMMessage, ToolCall } from '../../types/index.js';
 import type {
 	ChatProvider,
 	EmbeddingBatchProvider,
 	EmbeddingProvider,
 	JsonProvider,
+	LLMMessage,
 	StreamingProvider,
+	ToolCall,
 	ToolProvider,
 	VisionProvider,
-} from '../../types/providers.js';
+} from '@llm-helpers/types';
 import { uint8ToBase64 } from './image-converter.js';
 
 export type OpenAICompatAdapter = ChatProvider &

@@ -1,5 +1,4 @@
 import type z from 'zod';
-import type { LLMStreamChunk } from './llm.js';
 import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest, LLMToolRequest } from './requests.js';
 import type {
 	LLMBatchEmbedResponse,
@@ -37,3 +36,35 @@ export type VisionResponse = {
 export type VisionProvider = ProviderRequest<'vision', VisionRequest, Promise<VisionResponse>>;
 
 export type ToolProvider = ProviderRequest<'tool', LLMToolRequest, Promise<LLMToolResponse>>;
+
+export type ToolDefinition = {
+	name: string;
+	description?: string;
+	parameters?: Record<string, unknown>;
+};
+
+export type ToolCall = {
+	id: string;
+	name: string;
+	arguments: Record<string, unknown>;
+};
+
+export type LLMMessage = {
+	role: 'system' | 'user' | 'assistant' | 'tool';
+	content: string;
+	toolCalls?: ToolCall[];
+	toolCallId?: string;
+	toolName?: string;
+};
+
+export type LLMUsage = {
+	inputTokens?: number;
+	outputTokens?: number;
+	totalTokens?: number;
+};
+
+export type LLMStreamChunk = {
+	text: string;
+	done?: boolean;
+	raw?: unknown;
+};

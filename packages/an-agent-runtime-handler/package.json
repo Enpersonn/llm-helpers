@@ -1,0 +1,22 @@
+{
+	"name": "@llm-helpers/an-agent-runtime-handler",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"author": "Enpersonn",
+	"keywords": [],
+	"license": "ISC",
+	"packageManager": "pnpm@10.33.2",
+	"dependencies": {
+		"@llm-helpers/types": "workspace:*"
+	}
+}

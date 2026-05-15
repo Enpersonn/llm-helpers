@@ -1,14 +1,15 @@
-import { adapterFactory } from '../../core/factory.js';
-import type { LLMMessage, ToolCall } from '../../types/index.js';
 import type {
 	ChatProvider,
 	EmbeddingBatchProvider,
 	EmbeddingProvider,
 	JsonProvider,
+	LLMMessage,
 	StreamingProvider,
+	ToolCall,
 	ToolProvider,
 	VisionProvider,
-} from '../../types/providers.js';
+} from '@llm-helpers/types';
+import { adapterFactory } from '../../core/factory.js';
 import { uint8ToBase64 } from '../util/image-converter.js';
 
 type GeminiAdapter = ChatProvider &

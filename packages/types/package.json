@@ -1,0 +1,22 @@
+{
+	"name": "@llm-helpers/types",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"author": "Enpersonn",
+	"keywords": [],
+	"license": "ISC",
+	"packageManager": "pnpm@10.33.2",
+	"dependencies": {
+		"zod": "^4.4.3"
+	}
+}
