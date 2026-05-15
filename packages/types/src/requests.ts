@@ -1,5 +1,6 @@
 import type { z } from 'zod';
-import type { LLMMessage, ToolDefinition } from './providers.js';
+import type { LLMMessage } from './providers.js';
+import type { ToolDefinition } from './tools.js';
 
 export type ThinkingConfig = {
 	budgetTokens?: number;

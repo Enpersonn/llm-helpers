@@ -29,12 +29,21 @@ importers:
       '@llm-helpers/an-llm-request-router':
         specifier: workspace:*
         version: link:../../packages/an-llm-request-router
+      '@llm-helpers/tools':
+        specifier: workspace:*
+        version: link:../../packages/tools
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
   packages/an-agent-runtime-handler:
     dependencies:
+      '@llm-helpers/tools':
+        specifier: workspace:*
+        version: link:../tools
       '@llm-helpers/types':
         specifier: workspace:*
         version: link:../types
@@ -60,6 +69,15 @@ importers:
       cohere-ai:
         specifier: ^8.0.0
         version: 8.0.0
+
+  packages/tools:
+    dependencies:
+      '@llm-helpers/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
   packages/types:
     dependencies:

@@ -1,5 +1,6 @@
 import type z from 'zod';
 import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest, LLMToolRequest } from './requests.js';
+import type { ToolCall } from './tools.js';
 import type {
 	LLMBatchEmbedResponse,
 	LLMEmbedResponse,
@@ -43,18 +44,6 @@ export type ProviderCapabilities = {
 
 export type ToolProvider = ProviderRequest<'tool', LLMToolRequest, Promise<LLMToolResponse>> & {
 	capabilities?: ProviderCapabilities;
-};
-
-export type ToolDefinition = {
-	name: string;
-	description?: string;
-	parameters?: Record<string, unknown>;
-};
-
-export type ToolCall = {
-	id: string;
-	name: string;
-	arguments: Record<string, unknown>;
 };
 
 export type LLMMessage = {

@@ -1,8 +1,8 @@
 {
-	"name": "@llm-helpers/an-agent-runtime-handler",
+	"name": "@llm-helpers/tools",
 	"version": "1.0.0",
 	"type": "module",
-	"description": "",
+	"description": "Tool system for agent runtimes — discovery, routing, permissions, and execution",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -13,11 +13,10 @@
 		"build": "tsc"
 	},
 	"author": "Enpersonn",
-	"keywords": [],
 	"license": "ISC",
 	"packageManager": "pnpm@10.33.2",
 	"dependencies": {
-		"@llm-helpers/tools": "workspace:*",
-		"@llm-helpers/types": "workspace:*"
+		"@llm-helpers/types": "workspace:*",
+		"zod": "^4.4.3"
 	}
 }

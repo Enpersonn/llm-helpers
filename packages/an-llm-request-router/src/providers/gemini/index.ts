@@ -198,7 +198,7 @@ export const gemini = adapterFactory('gemini', (config: { apiKey: string; model:
 					functionDeclarations: request.tools.map((t) => ({
 						name: t.name,
 						description: t.description,
-						parameters: t.parameters,
+						parameters: t.inputSchema,
 					})),
 				},
 			];

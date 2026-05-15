@@ -167,7 +167,7 @@ export const anthropic = adapterFactory('anthropic', (config: { apiKey: string; 
 				name: t.name,
 				description: t.description ?? '',
 				// biome-ignore lint/suspicious/noExplicitAny: SDK input_schema type is opaque
-				input_schema: (t.parameters ?? { type: 'object', properties: {} }) as any,
+				input_schema: (t.inputSchema ?? { type: 'object', properties: {} }) as any,
 			}));
 
 			const response = await client.messages.create(

@@ -9,6 +9,8 @@
 	"dependencies": {
 		"@llm-helpers/an-agent-runtime-handler": "workspace:*",
 		"@llm-helpers/an-llm-request-router": "workspace:*",
-		"dotenv": "^17.4.2"
+		"@llm-helpers/tools": "workspace:*",
+		"dotenv": "^17.4.2",
+		"zod": "^4.4.3"
 	}
 }

@@ -197,7 +197,7 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 				function: {
 					name: t.name,
 					description: t.description,
-					parameters: t.parameters ?? { type: 'object', properties: {} },
+					parameters: t.inputSchema ?? { type: 'object', properties: {} },
 				},
 			}));
 

@@ -1,4 +1,5 @@
-import type { LLMUsage, ToolCall } from './providers.js';
+import type { LLMUsage } from './providers.js';
+import type { ToolCall } from './tools.js';
 
 export type LLMResponse = {
 	text: string;

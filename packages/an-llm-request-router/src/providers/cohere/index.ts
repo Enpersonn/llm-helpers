@@ -185,7 +185,7 @@ export const cohere = adapterFactory('cohere', (config: { apiKey: string; model:
 				function: {
 					name: t.name,
 					description: t.description ?? '',
-					parameters: t.parameters ?? { type: 'object', properties: {} },
+					parameters: t.inputSchema ?? { type: 'object', properties: {} },
 				},
 			}));
 
