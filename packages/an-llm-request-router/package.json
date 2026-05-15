@@ -19,6 +19,26 @@
 		"./ollama": {
 			"types": "./dist/providers/ollama/index.d.ts",
 			"import": "./dist/providers/ollama/index.js"
+		},
+		"./anthropic": {
+			"types": "./dist/providers/anthropic/index.d.ts",
+			"import": "./dist/providers/anthropic/index.js"
+		},
+		"./azure": {
+			"types": "./dist/providers/azure/index.d.ts",
+			"import": "./dist/providers/azure/index.js"
+		},
+		"./groq": {
+			"types": "./dist/providers/groq/index.d.ts",
+			"import": "./dist/providers/groq/index.js"
+		},
+		"./mistral": {
+			"types": "./dist/providers/mistral/index.d.ts",
+			"import": "./dist/providers/mistral/index.js"
+		},
+		"./cohere": {
+			"types": "./dist/providers/cohere/index.d.ts",
+			"import": "./dist/providers/cohere/index.js"
 		}
 	},
 	"scripts": {
@@ -26,7 +46,9 @@
 	},
 	"author": "Enpersonn",
 	"peerDependencies": {
+		"@anthropic-ai/sdk": "^0.x",
 		"@google/genai": "^2.2.0",
+		"cohere-ai": "^8.x",
 		"openai": "^6.37.0"
 	},
 	"peerDependenciesMeta": {
@@ -35,9 +57,19 @@
 		},
 		"@google/genai": {
 			"optional": true
+		},
+		"@anthropic-ai/sdk": {
+			"optional": true
+		},
+		"cohere-ai": {
+			"optional": true
 		}
 	},
 	"dependencies": {
 		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@anthropic-ai/sdk": "^0.96.0",
+		"cohere-ai": "^8.0.0"
 	}
 }

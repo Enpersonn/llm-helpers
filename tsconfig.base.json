@@ -8,8 +8,6 @@
 		"sourceMap": true,
 		"outDir": "dist",
 		"skipLibCheck": true,
-		"types": [
-			"node"
-		]
+		"types": ["node"]
 	}
 }

@@ -1,10 +1,10 @@
 import { createLLM, isChatProvider, isStreamingProvider } from '@llm-helpers/an-llm-request-router';
-import { geminiFactory } from '@llm-helpers/an-llm-request-router/gemini';
-import { ollamaFactory } from '@llm-helpers/an-llm-request-router/ollama';
+import { gemini } from '@llm-helpers/an-llm-request-router/gemini';
+import { ollama as ollamaProvider } from '@llm-helpers/an-llm-request-router/ollama';
 
 const availableAdapters = {
-	ollama: ollamaFactory,
-	gemini: geminiFactory,
+	ollama: ollamaProvider,
+	gemini: gemini,
 };
 
 export async function runLlmRouterDemos() {
@@ -57,7 +57,7 @@ export async function runLlmRouterDemos() {
 	console.log('ollama isStreamingProvider:', isStreamingProvider(ollama));
 
 	console.log('\n[.extend()]');
-	const countingOllama = ollamaFactory.extend((base) => ({
+	const countingOllama = ollamaProvider.extend((base) => ({
 		chat: async (req) => {
 			console.log('  chars in prompt:', req.messages.map((m) => m.content).join('').length);
 			return base.chat(req);
