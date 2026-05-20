@@ -1,6 +1,5 @@
 import type z from 'zod';
 import type { LLMBatchEmbedRequest, LLMEmbedRequest, LLMJsonRequest, LLMRequest, LLMToolRequest } from './requests.js';
-import type { ToolCall } from './tools.js';
 import type {
 	LLMBatchEmbedResponse,
 	LLMEmbedResponse,
@@ -8,6 +7,7 @@ import type {
 	LLMResponse,
 	LLMToolResponse,
 } from './response.js';
+import type { ToolCall, ToolContent } from './tools.js';
 
 export type ProviderRequest<N extends string, Req, Res> = {
 	[K in N]: (request: Req) => Res;
@@ -52,6 +52,7 @@ export type LLMMessage = {
 	toolCalls?: ToolCall[];
 	toolCallId?: string;
 	toolName?: string;
+	toolContent?: ToolContent[];
 };
 
 export type LLMUsage = {

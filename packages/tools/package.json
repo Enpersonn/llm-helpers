@@ -10,7 +10,8 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"test": "node --import tsx --test test/**/*.test.ts"
 	},
 	"author": "Enpersonn",
 	"license": "ISC",
@@ -19,5 +20,8 @@
 		"@llm-helpers/core": "workspace:*",
 		"@llm-helpers/types": "workspace:*",
 		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/node": "^25.7.0"
 	}
 }

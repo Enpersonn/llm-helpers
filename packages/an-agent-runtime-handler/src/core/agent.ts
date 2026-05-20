@@ -5,8 +5,11 @@ import type {
 	LLMToolRequest,
 	LLMToolResponse,
 	LLMUsage,
+	ToolContent,
 	ToolDefinition,
+	ToolExecutionContext,
 	ToolProvider,
+	ToolResult,
 } from '@llm-helpers/types';
 import { type AgentEventMap, type Bus, createBus } from './bus.js';
 import { AgentAbortError, AgentContextLimitError, AgentStepLimitError } from './errors.js';
@@ -14,23 +17,62 @@ import type { AgentOptions } from './options.js';
 import { accumulateUsage, buildCombinedSignal, callWithRetry } from './utils.js';
 
 type ToolsList = {
-	call: (args: Record<string, unknown>) => unknown | Promise<unknown>;
+	call: (args: Record<string, unknown>, context: ToolExecutionContext) => unknown | Promise<unknown>;
 	def: ToolDefinition;
 	parse?: (args: Record<string, unknown>) => Record<string, unknown>;
 }[];
 
 const isToolSystem = (tools: ToolsList | ToolSystem): tools is ToolSystem => !Array.isArray(tools);
 
-const toolResultToString = (result: Awaited<ReturnType<ToolSystem['execute']>>): string => {
-	if (!result.ok && result.error) return `Error: ${result.error.message}`;
-	return result.content
-		.map((c) => {
-			if (c.type === 'text') return c.text;
-			if (c.type === 'json') return JSON.stringify(c.value);
-			return `[${c.type}]`;
+const toolContentToString = (content: ToolContent[]): string =>
+	content
+		.map((block) => {
+			if (block.type === 'text') return block.text;
+			if (block.type === 'json') return JSON.stringify(block.value);
+			if (block.type === 'image') return `[image ${block.mimeType}]`;
+			return block.mimeType ? `[file ${block.path} (${block.mimeType})]` : `[file ${block.path}]`;
 		})
 		.join('\n');
+
+const toolResultToString = (result: ToolResult): string => {
+	if (!result.ok && result.error) return `Error: ${result.error.message}`;
+	return toolContentToString(result.content);
 };
+
+const isToolResult = (value: unknown): value is ToolResult =>
+	typeof value === 'object' &&
+	value !== null &&
+	'ok' in value &&
+	typeof (value as { ok: unknown }).ok === 'boolean' &&
+	'content' in value &&
+	Array.isArray((value as { content: unknown }).content);
+
+const normalizeToolContent = (value: unknown): ToolContent[] => {
+	if (typeof value === 'string') return [{ type: 'text', text: value }];
+	if (value === null || value === undefined) return [{ type: 'text', text: '' }];
+	return [{ type: 'json', value }];
+};
+
+const coerceToolResult = (toolCallId: string, value: unknown): ToolResult => {
+	if (isToolResult(value)) {
+		return {
+			toolCallId: value.toolCallId || toolCallId,
+			ok: value.ok,
+			content: value.content,
+			metadata: value.metadata,
+			error: value.error,
+		};
+	}
+
+	return {
+		toolCallId,
+		ok: true,
+		content: normalizeToolContent(value),
+	};
+};
+
+const toolMessageContent = (toolResult: ToolResult, fallbackText: string): ToolContent[] =>
+	toolResult.content.length > 0 ? toolResult.content : [{ type: 'text', text: fallbackText }];
 
 export default function createAgent(
 	provider: ToolProvider,
@@ -74,14 +116,14 @@ export default function createAgent(
 				: (request.signal ?? stopSignal);
 		const combinedSignal = buildCombinedSignal(callerSignal, timeout);
 
-		const resolvedToolDefs: ToolDefinition[] = isToolSystem(tools)
-			? await tools.listTools()
-			: tools.map((t) => t.def);
-
-		const totalUsage: LLMUsage = {};
-		let step = 0;
-
 		try {
+			const resolvedToolDefs: ToolDefinition[] = isToolSystem(tools)
+				? await tools.listTools()
+				: tools.map((t) => t.def);
+
+			const totalUsage: LLMUsage = {};
+			let step = 0;
+
 			while (true) {
 				if (combinedSignal?.aborted) {
 					const reason: 'signal' | 'timeout' | 'stop' =
@@ -139,45 +181,51 @@ export default function createAgent(
 					let args = toolCall.arguments;
 					if (hooks.beforeToolCall) args = await hooks.beforeToolCall(toolCall.name, args);
 
-					let resultStr: string;
+					let toolResult: ToolResult;
 					try {
 						if (isToolSystem(tools)) {
 							bus.emit('tool_call', { toolName: toolCall.name, args, step, metadata });
-							const result = await tools.execute(
+							toolResult = await tools.execute(
 								{ id: toolCall.id, name: toolCall.name, arguments: args },
 								{ signal: combinedSignal },
 							);
-							resultStr = toolResultToString(result);
 						} else {
 							const tool = tools.find((t) => t.def.name === toolCall.name);
 							if (!tool) {
-								agentContext.push({
-									role: 'tool',
-									content: `Error: unknown tool '${toolCall.name}'`,
+								toolResult = {
 									toolCallId: toolCall.id,
-									toolName: toolCall.name,
-								});
-								continue;
+									ok: false,
+									content: [],
+									error: { message: `Unknown tool: ${toolCall.name}`, code: 'TOOL_NOT_FOUND' },
+								};
+							} else {
+								if (tool.parse) args = tool.parse(args);
+								bus.emit('tool_call', { toolName: toolCall.name, args, step, metadata });
+								const result = await tool.call(args, { signal: combinedSignal, metadata });
+								toolResult = coerceToolResult(toolCall.id, result);
 							}
-							if (tool.parse) args = tool.parse(args);
-							bus.emit('tool_call', { toolName: toolCall.name, args, step, metadata });
-							const result = await tool.call(args);
-							resultStr = typeof result === 'string' ? result : JSON.stringify(result);
 						}
 					} catch (err) {
 						bus.emit('tool_error', { toolName: toolCall.name, error: err, step, metadata });
 						if (onToolError === 'throw') throw err;
-						resultStr = `Error: ${err instanceof Error ? err.message : String(err)}`;
+						toolResult = {
+							toolCallId: toolCall.id,
+							ok: false,
+							content: [],
+							error: { message: err instanceof Error ? err.message : String(err) },
+						};
 					}
 
+					let resultStr = toolResultToString(toolResult);
 					if (hooks.afterToolCall) resultStr = await hooks.afterToolCall(toolCall.name, resultStr);
 
-					bus.emit('tool_result', { toolName: toolCall.name, result: resultStr, step, metadata });
+					bus.emit('tool_result', { toolName: toolCall.name, result: resultStr, toolResult, step, metadata });
 					agentContext.push({
 						role: 'tool',
 						content: resultStr,
 						toolCallId: toolCall.id,
 						toolName: toolCall.name,
+						toolContent: toolMessageContent(toolResult, resultStr),
 					});
 
 					if (combinedSignal?.aborted) break;

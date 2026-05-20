@@ -1,5 +1,5 @@
 import { type Bus, createBus } from '@llm-helpers/core';
-import type { LLMMessage, LLMUsage } from '@llm-helpers/types';
+import type { LLMMessage, LLMUsage, ToolResult } from '@llm-helpers/types';
 
 export type { Bus };
 export { createBus };
@@ -7,7 +7,13 @@ export { createBus };
 export type AgentEventMap = {
 	thinking: { content: string; step: number; metadata?: Record<string, unknown> };
 	tool_call: { toolName: string; args: Record<string, unknown>; step: number; metadata?: Record<string, unknown> };
-	tool_result: { toolName: string; result: string; step: number; metadata?: Record<string, unknown> };
+	tool_result: {
+		toolName: string;
+		result: string;
+		toolResult: ToolResult;
+		step: number;
+		metadata?: Record<string, unknown>;
+	};
 	tool_error: { toolName: string; error: unknown; step: number; metadata?: Record<string, unknown> };
 	step_start: { step: number; metadata?: Record<string, unknown> };
 	step_end: { step: number; usage?: LLMUsage; metadata?: Record<string, unknown> };

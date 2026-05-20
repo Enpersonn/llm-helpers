@@ -210,7 +210,11 @@ function attachBusLogger(bus: ReturnType<typeof createAgent>['bus'], label: stri
 	bus.on('tool_call', (e) =>
 		console.log(`  [${label}] tool_call    ${e.toolName}(${JSON.stringify(e.args).slice(0, 60)})`),
 	);
-	bus.on('tool_result', (e) => console.log(`  [${label}] tool_result  ${e.toolName} → ${e.result.slice(0, 80)}`));
+	bus.on('tool_result', (e) =>
+		console.log(
+			`  [${label}] tool_result  ${e.toolName} → ${e.result.slice(0, 80)} blocks=${e.toolResult.content.length}`,
+		),
+	);
 	bus.on('tool_error', (e) => console.warn(`  [${label}] tool_error   ${e.toolName}:`, e.error));
 	bus.on('retry', (e) =>
 		console.log(`  [${label}] retry        step=${e.step} attempt=${e.attempt} delay=${e.delayMs}ms`),

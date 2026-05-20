@@ -1,5 +1,22 @@
 import type { AdapterRegistry, FactoryConfig, LLMConfig, Middleware, ProviderConfigs } from '../types/index.js';
 
+const hasOwn = (value: object, key: PropertyKey): boolean => Object.hasOwn(value, key);
+
+const validateConfig = <TRegistry extends AdapterRegistry, TProviders extends ProviderConfigs<TRegistry>>(
+	registry: TRegistry,
+	config: LLMConfig<TRegistry, TProviders>,
+) => {
+	if (!hasOwn(config.providers, config.defaultProvider)) {
+		throw new Error(`Default provider '${String(config.defaultProvider)}' is not configured`);
+	}
+
+	for (const providerName of Object.keys(config.providers)) {
+		if (!(providerName in registry)) {
+			throw new Error(`No adapter registered for provider '${providerName}'`);
+		}
+	}
+};
+
 export function createLLM<
 	const TCustom extends AdapterRegistry = {},
 	const TRegistry extends AdapterRegistry = TCustom,
@@ -8,6 +25,8 @@ export function createLLM<
 	const registry = {
 		...options?.adapters,
 	} as unknown as TRegistry;
+
+	validateConfig(registry, config);
 
 	return new LLM(registry, config, options?.middleware);
 }
@@ -41,6 +60,10 @@ export class LLM<
 		if (this.cache.has(name)) return this.cache.get(name) as Result;
 
 		const factory = this.registry[name];
+		if (!factory) {
+			throw new Error(`No adapter registered for provider '${String(name)}'`);
+		}
+
 		const providerConfig = this.config.providers[name];
 
 		if (!providerConfig) {

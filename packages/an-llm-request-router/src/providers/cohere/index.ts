@@ -9,6 +9,7 @@ import type {
 	ToolProvider,
 } from '@llm-helpers/types';
 import { adapterFactory } from '../../core/factory.js';
+import { toolContentToText } from '../util/tool-content.js';
 
 type CohereAdapter = ChatProvider &
 	StreamingProvider &
@@ -242,7 +243,7 @@ function toCohereMessages(messages: LLMMessage[]): any[] {
 			return {
 				role: 'tool',
 				toolCallId: msg.toolCallId ?? '',
-				content: [{ type: 'text', text: msg.content }],
+				content: [{ type: 'text', text: toolContentToText(msg.toolContent, msg.content) }],
 			};
 		}
 		if (msg.role === 'assistant' && msg.toolCalls?.length) {

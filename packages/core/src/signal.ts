@@ -8,13 +8,20 @@ export const buildCombinedSignal = (signal?: AbortSignal, timeout?: number): Abo
 };
 
 export const withTimeout = <T>(promise: Promise<T>, ms: number, label?: string): Promise<T> => {
-	return Promise.race([
-		promise,
-		new Promise<never>((_, reject) =>
-			setTimeout(
-				() => reject(new Error(label ? `'${label}' timed out after ${ms}ms` : `Operation timed out after ${ms}ms`)),
-				ms,
-			),
-		),
-	]);
+	return new Promise((resolve, reject) => {
+		const timer = setTimeout(() => {
+			reject(new Error(label ? `'${label}' timed out after ${ms}ms` : `Operation timed out after ${ms}ms`));
+		}, ms);
+
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(error: unknown) => {
+				clearTimeout(timer);
+				reject(error);
+			},
+		);
+	});
 };

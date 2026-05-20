@@ -11,6 +11,7 @@ import type {
 } from '@llm-helpers/types';
 import { adapterFactory } from '../../core/factory.js';
 import { uint8ToBase64 } from '../util/image-converter.js';
+import { toolContentToGeminiResponse } from '../util/tool-content.js';
 
 type GeminiAdapter = ChatProvider &
 	StreamingProvider &
@@ -256,7 +257,7 @@ function extractSystemInstruction(messages: LLMMessage[]): string | undefined {
 	return parts.length ? parts.join('\n') : undefined;
 }
 
-function toGeminiContents(messages: LLMMessage[]) {
+export function toGeminiContents(messages: LLMMessage[]) {
 	return messages
 		.filter((m) => m.role !== 'system')
 		.map((message) => {
@@ -267,7 +268,7 @@ function toGeminiContents(messages: LLMMessage[]) {
 						{
 							functionResponse: {
 								name: message.toolName ?? message.toolCallId ?? 'tool',
-								response: { result: message.content },
+								response: toolContentToGeminiResponse(message),
 							},
 						},
 					],
@@ -276,9 +277,12 @@ function toGeminiContents(messages: LLMMessage[]) {
 			if (message.role === 'assistant' && message.toolCalls?.length) {
 				return {
 					role: 'model' as const,
-					parts: message.toolCalls.map((tc) => ({
-						functionCall: { id: tc.id, name: tc.name, args: tc.arguments },
-					})),
+					parts: [
+						...(message.content ? [{ text: message.content }] : []),
+						...message.toolCalls.map((tc) => ({
+							functionCall: { id: tc.id, name: tc.name, args: tc.arguments },
+						})),
+					],
 				};
 			}
 			return {

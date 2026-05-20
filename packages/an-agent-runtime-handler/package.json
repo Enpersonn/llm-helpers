@@ -10,7 +10,8 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"test": "node --import tsx --test test/**/*.test.ts"
 	},
 	"author": "Enpersonn",
 	"keywords": [],

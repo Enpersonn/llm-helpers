@@ -18,6 +18,7 @@ export type McpRuntime = {
 		serverName: string;
 		name: string;
 		arguments: Record<string, unknown>;
+		signal?: AbortSignal;
 	}): Promise<McpCallResult>;
 };
 
@@ -35,7 +36,9 @@ const normalizeMcpContent = (content?: unknown[]): ToolContent[] => {
 			return [{ type: 'text', text: b.text }];
 		}
 		if (b.type === 'image' && typeof b.data === 'string') {
-			return [{ type: 'image', data: b.data, mimeType: typeof b.mimeType === 'string' ? b.mimeType : 'image/png' }];
+			return [
+				{ type: 'image', data: b.data, mimeType: typeof b.mimeType === 'string' ? b.mimeType : 'image/png' },
+			];
 		}
 		return [{ type: 'json', value: block }];
 	});
@@ -51,9 +54,14 @@ export const createMcpProvider = (runtime: McpRuntime): ToolBackend => ({
 			inputSchema: t.inputSchema as Record<string, unknown> | undefined,
 		}));
 	},
-	callTool: async (call, _context) => {
+	callTool: async (call, context) => {
 		const { serverName, toolName } = parseMcpToolName(call.name);
-		const result = await runtime.callTool({ serverName, name: toolName, arguments: call.arguments });
+		const result = await runtime.callTool({
+			serverName,
+			name: toolName,
+			arguments: call.arguments,
+			signal: context.signal,
+		});
 		const content = normalizeMcpContent(result.content);
 		return {
 			toolCallId: call.id,

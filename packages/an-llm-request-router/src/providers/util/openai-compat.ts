@@ -10,6 +10,7 @@ import type {
 	VisionProvider,
 } from '@llm-helpers/types';
 import { uint8ToBase64 } from './image-converter.js';
+import { toolContentToText } from './tool-content.js';
 
 export type OpenAICompatAdapter = ChatProvider &
 	StreamingProvider &
@@ -240,7 +241,11 @@ export function makeOpenAICompatMethods(
 export function toOpenAIMessages(messages: LLMMessage[]) {
 	return messages.map((msg) => {
 		if (msg.role === 'tool') {
-			return { role: 'tool' as const, content: msg.content, tool_call_id: msg.toolCallId ?? '' };
+			return {
+				role: 'tool' as const,
+				content: toolContentToText(msg.toolContent, msg.content),
+				tool_call_id: msg.toolCallId ?? '',
+			};
 		}
 		if (msg.role === 'assistant' && msg.toolCalls?.length) {
 			return {

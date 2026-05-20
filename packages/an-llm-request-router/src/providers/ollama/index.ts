@@ -11,6 +11,7 @@ import type {
 } from '@llm-helpers/types';
 import { adapterFactory } from '../../core/factory.js';
 import { uint8ToBase64 } from '../util/image-converter.js';
+import { toolContentToText } from '../util/tool-content.js';
 
 type OllamaAdapter = ChatProvider &
 	StreamingProvider &
@@ -256,6 +257,9 @@ function toOllamaMessages(messages: LLMMessage[]) {
 				})),
 			};
 		}
-		return { role: msg.role, content: msg.content };
+		return {
+			role: msg.role,
+			content: msg.role === 'tool' ? toolContentToText(msg.toolContent, msg.content) : msg.content,
+		};
 	});
 }

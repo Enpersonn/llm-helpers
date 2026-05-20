@@ -1,25 +1,25 @@
-import type { ToolBackend, ToolContent } from '@llm-helpers/types';
+import type { ToolBackend, ToolContent, ToolExecutionContext } from '@llm-helpers/types';
 import { z } from 'zod';
 
 export type FunctionTool = {
 	name: string;
 	description: string;
 	inputSchema: Record<string, unknown>;
-	execute(args: Record<string, unknown>): unknown | Promise<unknown>;
+	execute(args: Record<string, unknown>, context: ToolExecutionContext): unknown | Promise<unknown>;
 };
 
 export function defineTool<TSchema extends z.ZodObject<z.ZodRawShape>>(config: {
 	name: string;
 	description: string;
 	input: TSchema;
-	execute(args: z.infer<TSchema>): unknown | Promise<unknown>;
+	execute(args: z.infer<TSchema>, context: ToolExecutionContext): unknown | Promise<unknown>;
 }): FunctionTool {
 	const jsonSchema = z.toJSONSchema(config.input) as Record<string, unknown>;
 	return {
 		name: config.name,
 		description: config.description,
 		inputSchema: jsonSchema,
-		execute: async (rawArgs) => {
+		execute: async (rawArgs, context) => {
 			const result = config.input.safeParse(rawArgs);
 			if (!result.success) {
 				const detail = result.error.issues
@@ -27,7 +27,7 @@ export function defineTool<TSchema extends z.ZodObject<z.ZodRawShape>>(config: {
 					.join(', ');
 				throw new Error(`Invalid arguments for '${config.name}': ${detail}`);
 			}
-			return config.execute(result.data);
+			return config.execute(result.data, context);
 		},
 	};
 }
@@ -40,7 +40,7 @@ export const createFunctionProvider = (id: string, tools: FunctionTool[]): ToolB
 			description: t.description,
 			inputSchema: t.inputSchema,
 		})),
-	callTool: async (call, _context) => {
+	callTool: async (call, context) => {
 		const tool = tools.find((t) => t.name === call.name);
 
 		if (!tool) {
@@ -52,7 +52,7 @@ export const createFunctionProvider = (id: string, tools: FunctionTool[]): ToolB
 			};
 		}
 
-		const raw = await tool.execute(call.arguments);
+		const raw = await tool.execute(call.arguments, context);
 
 		let content: ToolContent[];
 		if (typeof raw === 'string') {

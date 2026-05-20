@@ -9,6 +9,7 @@ import type {
 } from '@llm-helpers/types';
 import { adapterFactory } from '../../core/factory.js';
 import { uint8ToBase64 } from '../util/image-converter.js';
+import { toolContentToText } from '../util/tool-content.js';
 
 type AnthropicAdapter = ChatProvider & StreamingProvider & VisionProvider & JsonProvider & ToolProvider;
 
@@ -237,7 +238,13 @@ function toAnthropicMessages(messages: LLMMessage[]): { system: string | undefin
 			if (msg.role === 'tool') {
 				return {
 					role: 'user',
-					content: [{ type: 'tool_result', tool_use_id: msg.toolCallId ?? '', content: msg.content }],
+					content: [
+						{
+							type: 'tool_result',
+							tool_use_id: msg.toolCallId ?? '',
+							content: toolContentToText(msg.toolContent, msg.content),
+						},
+					],
 				};
 			}
 			if (msg.role === 'assistant' && msg.toolCalls?.length) {
