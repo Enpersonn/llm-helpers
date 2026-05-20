@@ -5,3 +5,6 @@
 - memory/context hooks
 - no MCP dependency
 - no OpenAI dependency
+
+
+RAG and Skills handeling should be thought about

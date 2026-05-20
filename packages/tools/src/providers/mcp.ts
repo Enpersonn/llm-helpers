@@ -18,7 +18,7 @@ export type McpRuntime = {
 		serverName: string;
 		name: string;
 		arguments: Record<string, unknown>;
-		signal?: AbortSignal;
+		options?: { signal?: AbortSignal };
 	}): Promise<McpCallResult>;
 };
 
@@ -60,7 +60,7 @@ export const createMcpProvider = (runtime: McpRuntime): ToolBackend => ({
 			serverName,
 			name: toolName,
 			arguments: call.arguments,
-			signal: context.signal,
+			options: { signal: context.signal },
 		});
 		const content = normalizeMcpContent(result.content);
 		return {

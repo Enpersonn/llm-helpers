@@ -29,9 +29,15 @@ importers:
       '@llm-helpers/an-llm-request-router':
         specifier: workspace:*
         version: link:../../packages/an-llm-request-router
+      '@llm-helpers/an-mcp-runtime-handler':
+        specifier: workspace:*
+        version: link:../../packages/an-mcp-runtime-handler
       '@llm-helpers/tools':
         specifier: workspace:*
         version: link:../../packages/tools
+      '@llm-helpers/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -72,6 +78,12 @@ importers:
       cohere-ai:
         specifier: ^8.0.0
         version: 8.0.0
+
+  packages/an-mcp-runtime-handler:
+    dependencies:
+      '@llm-helpers/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/core: {}
 

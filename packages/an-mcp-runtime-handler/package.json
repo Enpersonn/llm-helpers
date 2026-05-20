@@ -1,0 +1,22 @@
+{
+	"name": "@llm-helpers/an-mcp-runtime-handler",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "MCP client + manager for the llm-helpers stack",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "node --import tsx --test test/**/*.test.ts"
+	},
+	"author": "Enpersonn",
+	"license": "ISC",
+	"packageManager": "pnpm@10.33.2",
+	"dependencies": {
+		"@llm-helpers/core": "workspace:*"
+	}
+}
