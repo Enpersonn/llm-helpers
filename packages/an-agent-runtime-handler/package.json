@@ -17,6 +17,7 @@
 	"license": "ISC",
 	"packageManager": "pnpm@10.33.2",
 	"dependencies": {
+		"@llm-helpers/core": "workspace:*",
 		"@llm-helpers/tools": "workspace:*",
 		"@llm-helpers/types": "workspace:*"
 	}

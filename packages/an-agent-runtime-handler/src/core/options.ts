@@ -1,9 +1,7 @@
+import type { RetryPolicy } from '@llm-helpers/core';
 import type { LLMMessage, LLMToolRequest, LLMToolResponse } from '@llm-helpers/types';
 
-export type RetryPolicy = {
-	maxAttempts?: number;
-	backoff?: (attempt: number, error: unknown) => number | false;
-};
+export type { RetryPolicy };
 
 export type AgentHooks = {
 	beforeLLMCall?: (req: LLMToolRequest) => LLMToolRequest | Promise<LLMToolRequest>;

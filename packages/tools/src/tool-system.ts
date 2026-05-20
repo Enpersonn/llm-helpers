@@ -1,7 +1,7 @@
+import { withTimeout } from '@llm-helpers/core';
 import type { ToolBackend, ToolCall, ToolDefinition, ToolExecutionContext, ToolResult } from '@llm-helpers/types';
 import type { Permissions } from './core/permissions.js';
 import { createRegistry } from './core/registry.js';
-import { withTimeout } from './core/timeout.js';
 
 export type ToolSystemConfig = {
 	providers: ToolBackend[];

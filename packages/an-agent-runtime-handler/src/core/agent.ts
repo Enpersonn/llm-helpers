@@ -114,8 +114,8 @@ export default function createAgent(
 				let res: LLMToolResponse = await callWithRetry(
 					() => provider.tool(llmReq),
 					retry,
-					step,
-					(payload) => bus.emit('retry', { ...payload, metadata }),
+					(attempt: number, error: unknown, delayMs: number) =>
+						bus.emit('retry', { step, attempt, error, delayMs, metadata }),
 				);
 				if (hooks.afterLLMCall) res = await hooks.afterLLMCall(res);
 

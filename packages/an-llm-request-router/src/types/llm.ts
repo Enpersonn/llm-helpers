@@ -1,17 +1,5 @@
 import type { AdapterFactory } from './adapter.js';
 
-export type ToolDefinition = {
-	name: string;
-	description?: string;
-	parameters?: Record<string, unknown>;
-};
-
-export type ToolCall = {
-	id: string;
-	name: string;
-	arguments: Record<string, unknown>;
-};
-
 export type FactoryConfig<T> = T extends AdapterFactory<string, infer TConfig> ? TConfig : never;
 
 // biome-ignore lint/suspicious/noExplicitAny: registry must remain open to factories with any config type (contravariant parameter position)

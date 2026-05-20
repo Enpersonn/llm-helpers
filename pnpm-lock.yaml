@@ -41,6 +41,9 @@ importers:
 
   packages/an-agent-runtime-handler:
     dependencies:
+      '@llm-helpers/core':
+        specifier: workspace:*
+        version: link:../core
       '@llm-helpers/tools':
         specifier: workspace:*
         version: link:../tools
@@ -70,8 +73,13 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
 
+  packages/core: {}
+
   packages/tools:
     dependencies:
+      '@llm-helpers/core':
+        specifier: workspace:*
+        version: link:../core
       '@llm-helpers/types':
         specifier: workspace:*
         version: link:../types
