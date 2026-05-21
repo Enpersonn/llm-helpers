@@ -44,7 +44,7 @@ export async function runMcpManagerDemo() {
 	const repoRoot = new URL('../../../', import.meta.url).pathname;
 
 	header('MCP Manager Demo — Playwright + Filesystem');
-	console.log(`  Model          : ${MODEL}`);
+	console.log(`  Model          : ${MODEL} (Gemini)`);
 	console.log(`  Filesystem root: ${repoRoot}`);
 	console.log('\n  Starting MCP servers... (first run may download packages)\n');
 
@@ -80,7 +80,7 @@ export async function runMcpManagerDemo() {
 
 	const manager = createMcpManager({
 		servers: {
-			fs: { client: fsClient },
+			// fs: { client: fsClient },
 			pw: { client: pwClient },
 		},
 	});
@@ -141,10 +141,36 @@ export async function runMcpManagerDemo() {
 
 			console.log();
 
+			let llmTimer: ReturnType<typeof setInterval> | null = null;
+			let llmStart = 0;
+
 			const agent = createAgent(provider, toolSystem, {
 				maxSteps: 20,
-				timeout: 120_000,
 				onToolError: 'continue',
+				hooks: {
+					beforeLLMCall: (req) => {
+						llmStart = Date.now();
+						process.stdout.write(
+							`  [llm] → ${req.messages.length} msgs, ${req.tools.length} tools\n  [llm] waiting`,
+						);
+						llmTimer = setInterval(() => {
+							const s = Math.round((Date.now() - llmStart) / 1000);
+							process.stdout.write(` ${s}s`);
+						}, 3000);
+						return req;
+					},
+					afterLLMCall: (res) => {
+						if (llmTimer) {
+							clearInterval(llmTimer);
+							llmTimer = null;
+						}
+						const elapsed = ((Date.now() - llmStart) / 1000).toFixed(1);
+						process.stdout.write(
+							`\n  [llm] ← ${elapsed}s  finish=${res.finishReason}  tool_calls=${res.toolCalls.length}\n`,
+						);
+						return res;
+					},
+				},
 			});
 
 			agent.bus.on('step_start', (e) => process.stdout.write(`  [agent] step ${e.step}\n`));
@@ -175,7 +201,7 @@ export async function runMcpManagerDemo() {
 			];
 
 			try {
-				const result = await agent.start({ messages });
+				const result = await agent.start({ messages, maxTokens: 1024 });
 				const last = result.at(-1);
 				if (last) {
 					console.log(`Agent: ${last.content}\n`);
@@ -184,6 +210,11 @@ export async function runMcpManagerDemo() {
 					history = turns.slice(-6);
 				}
 			} catch (err) {
+				if (llmTimer) {
+					clearInterval(llmTimer);
+					llmTimer = null;
+					process.stdout.write('\n');
+				}
 				console.error('Agent error:', err instanceof Error ? err.message : err, '\n');
 			}
 		}

@@ -2,8 +2,9 @@
  * HTTP+SSE transport for MCP 2024-11-05 spec.
  * @deprecated Use createStreamableHttpTransport (MCP 2025-11-25) instead.
  */
-import type { JsonRpcMessage, McpTransport, TokenProvider } from '../types.js';
+
 import { McpAuthError, McpConnectionError, McpProtocolError } from '../core/errors.js';
+import type { JsonRpcMessage, McpTransport, TokenProvider } from '../types.js';
 
 type HttpTransportConfig = {
 	url: string;
@@ -155,7 +156,9 @@ export const createHttpTransport = (config: HttpTransportConfig): McpTransport =
 			try {
 				res = await fetchWithAuth(url, { method: 'POST', headers, body: JSON.stringify(message) });
 			} catch (err) {
-				throw new McpConnectionError(`HTTP request failed: ${err instanceof Error ? err.message : String(err)}`);
+				throw new McpConnectionError(
+					`HTTP request failed: ${err instanceof Error ? err.message : String(err)}`,
+				);
 			}
 
 			if (!res.ok) {

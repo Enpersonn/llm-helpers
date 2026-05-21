@@ -22,12 +22,11 @@ import {
 	McpTimeoutError,
 } from './errors.js';
 import {
-	MCP_PROTOCOL_VERSION,
 	buildCancelNotification,
 	buildCompletionRequest,
 	buildErrorResponse,
-	buildInitializeParams,
 	buildInitializedNotification,
+	buildInitializeParams,
 	buildInitializeRequest,
 	buildLoggingSetLevelRequest,
 	buildPingRequest,
@@ -41,6 +40,7 @@ import {
 	buildToolCallRequest,
 	buildToolsListRequest,
 	deriveClientCapabilities,
+	MCP_PROTOCOL_VERSION,
 	nextRequestId,
 } from './protocol.js';
 
@@ -59,13 +59,7 @@ const JSONRPC_METHOD_NOT_FOUND = -32601;
 const JSONRPC_INTERNAL_ERROR = -32603;
 
 export const createMcpClient = (transport: McpTransport, options: McpClientOptions = {}): McpClient => {
-	const {
-		timeout: defaultTimeout,
-		retry: retryPolicy = {},
-		hooks = {},
-		handlers = {},
-		keepAlive,
-	} = options;
+	const { timeout: defaultTimeout, retry: retryPolicy = {}, hooks = {}, handlers = {}, keepAlive } = options;
 
 	const bus = createBus<McpClientEventMap>();
 	const pending = new Map<string | number, PendingRequest>();
@@ -148,14 +142,18 @@ export const createMcpClient = (transport: McpTransport, options: McpClientOptio
 				const p = params as { mode?: string };
 				if (p?.mode === 'url') {
 					if (!handlers.onUrlElicitation) {
-						await transport.send(buildErrorResponse(id, JSONRPC_METHOD_NOT_FOUND, 'url elicitation not supported'));
+						await transport.send(
+							buildErrorResponse(id, JSONRPC_METHOD_NOT_FOUND, 'url elicitation not supported'),
+						);
 						return;
 					}
 					await handlers.onUrlElicitation(params as Parameters<typeof handlers.onUrlElicitation>[0]);
 					await transport.send(buildSuccessResponse(id, {}));
 				} else {
 					if (!handlers.onElicitation) {
-						await transport.send(buildErrorResponse(id, JSONRPC_METHOD_NOT_FOUND, 'elicitation not supported'));
+						await transport.send(
+							buildErrorResponse(id, JSONRPC_METHOD_NOT_FOUND, 'elicitation not supported'),
+						);
 						return;
 					}
 					const result = await handlers.onElicitation(params as Parameters<typeof handlers.onElicitation>[0]);
@@ -457,7 +455,9 @@ export const createMcpClient = (transport: McpTransport, options: McpClientOptio
 		async notifyRootsChanged(): Promise<void> {
 			if (state !== 'connected') throw new McpConnectionError('Not connected');
 			if (!handlers.onRootsList) {
-				throw new McpCapabilityError('Client did not register onRootsList handler — roots capability not advertised');
+				throw new McpCapabilityError(
+					'Client did not register onRootsList handler — roots capability not advertised',
+				);
 			}
 			await sendRaw(buildRootsChangedNotification());
 		},
@@ -552,10 +552,11 @@ export const createMcpClient = (transport: McpTransport, options: McpClientOptio
 					return sendRequest<McpCallResult>(buildTasksResultRequest(resultId, taskId));
 				}
 
-				return sendRequest<McpCallResult>(
-					buildToolCallRequest(id, name, resolvedArgs, { progressToken }),
-					{ signal: callOptions?.signal, onProgress: callOptions?.onProgress, progressToken },
-				);
+				return sendRequest<McpCallResult>(buildToolCallRequest(id, name, resolvedArgs, { progressToken }), {
+					signal: callOptions?.signal,
+					onProgress: callOptions?.onProgress,
+					progressToken,
+				});
 			};
 
 			try {

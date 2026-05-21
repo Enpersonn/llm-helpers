@@ -1,9 +1,9 @@
 import { createAgent } from '@llm-helpers/an-agent-runtime-handler';
-import { gemini } from '@llm-helpers/an-llm-request-router/gemini';
+import { ollama } from '@llm-helpers/an-llm-request-router/ollama';
 import { createMcpClient, createNpxStdioTransport } from '@llm-helpers/an-mcp-runtime-handler';
 import { createMcpProvider, createToolSystem } from '@llm-helpers/tools';
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const MODEL = 'gemma4';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ export async function runMcpDemo() {
 	const apiKey = process.env.GEMINI_API_KEY;
 	if (!apiKey) throw new Error('GEMINI_API_KEY not set');
 
-	const provider = gemini.create({ apiKey, model: GEMINI_MODEL });
+	const provider = ollama.create({ model: MODEL });
 
 	// Point the filesystem server at the monorepo root so the agent has
 	// something interesting to explore.
@@ -28,7 +28,7 @@ export async function runMcpDemo() {
 
 	header('MCP Demo — filesystem server via npx + Gemini agent');
 	console.log(`  Filesystem root: ${repoRoot}`);
-	console.log(`  Model: ${GEMINI_MODEL}\n`);
+	console.log(`  Model: ${MODEL}\n`);
 
 	// ── 1. Create and connect the MCP client ──────────────────────────────────
 	const client = createMcpClient(
@@ -48,8 +48,12 @@ export async function runMcpDemo() {
 	);
 
 	// Forward MCP bus events to console
-	client.bus.on('tool_call', (e) => console.log(`  [mcp] tool_call   ${e.name}(${JSON.stringify(e.args).slice(0, 80)})`));
-	client.bus.on('tool_result', (e) => console.log(`  [mcp] tool_result ${e.name} → isError=${e.result.isError ?? false}`));
+	client.bus.on('tool_call', (e) =>
+		console.log(`  [mcp] tool_call   ${e.name}(${JSON.stringify(e.args).slice(0, 80)})`),
+	);
+	client.bus.on('tool_result', (e) =>
+		console.log(`  [mcp] tool_result ${e.name} → isError=${e.result.isError ?? false}`),
+	);
 	client.bus.on('tool_error', (e) => console.warn(`  [mcp] tool_error  ${e.name}:`, e.error));
 	client.bus.on('disconnected', (e) => console.log(`  [mcp] disconnected reason=${e.reason ?? 'clean'}`));
 
@@ -64,7 +68,12 @@ export async function runMcpDemo() {
 			const t = await client.listTools();
 			return t.map((tool) => ({ ...tool, serverName: 'fs' }));
 		},
-		callTool: async (params: { serverName: string; name: string; arguments: Record<string, unknown>; options?: { signal?: AbortSignal } }) => {
+		callTool: async (params: {
+			serverName: string;
+			name: string;
+			arguments: Record<string, unknown>;
+			options?: { signal?: AbortSignal };
+		}) => {
 			return client.callTool(params.name, params.arguments, { signal: params.options?.signal });
 		},
 	};
@@ -81,8 +90,12 @@ export async function runMcpDemo() {
 
 	agent.bus.on('step_start', (e) => console.log(`  [agent] step ${e.step} started`));
 	agent.bus.on('tool_call', (e) => console.log(`  [agent] calling tool: ${e.toolName}`));
-	agent.bus.on('tool_result', (e) => console.log(`  [agent] tool result: ${e.toolName} (${e.result.slice(0, 60)}...)`));
-	agent.bus.on('complete', (e) => console.log(`  [agent] done — in=${e.totalUsage.inputTokens ?? 0} out=${e.totalUsage.outputTokens ?? 0}`));
+	agent.bus.on('tool_result', (e) =>
+		console.log(`  [agent] tool result: ${e.toolName} (${e.result.slice(0, 60)}...)`),
+	);
+	agent.bus.on('complete', (e) =>
+		console.log(`  [agent] done — in=${e.totalUsage.inputTokens ?? 0} out=${e.totalUsage.outputTokens ?? 0}`),
+	);
 
 	const question =
 		'List the top-level directories and files in the repo root. ' +

@@ -21,7 +21,9 @@ type OllamaAdapter = ChatProvider &
 	JsonProvider &
 	ToolProvider;
 
-export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; model: string }): OllamaAdapter => {
+export const ollama = adapterFactory(
+	'ollama',
+	(config: { baseUrl?: string; model: string; numCtx?: number }): OllamaAdapter => {
 	const baseUrl = config.baseUrl ?? 'http://localhost:11434';
 
 	async function post<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
@@ -55,7 +57,7 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 					model,
 					messages: toOllamaMessages(request.messages),
 					stream: false,
-					options: { temperature: request.temperature, num_predict: request.maxTokens },
+					options: { temperature: request.temperature, num_predict: request.maxTokens, num_ctx: config.numCtx },
 				},
 				request.signal,
 			);
@@ -84,7 +86,7 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 					model,
 					messages: toOllamaMessages(request.messages),
 					stream: true,
-					options: { temperature: request.temperature, num_predict: request.maxTokens },
+					options: { temperature: request.temperature, num_predict: request.maxTokens, num_ctx: config.numCtx },
 				}),
 			});
 
@@ -167,7 +169,7 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 					messages: toOllamaMessages(request.messages),
 					stream: false,
 					format,
-					options: { temperature: request.temperature, num_predict: request.maxTokens },
+					options: { temperature: request.temperature, num_predict: request.maxTokens, num_ctx: config.numCtx },
 				},
 				request.signal,
 			);
@@ -202,6 +204,8 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 				},
 			}));
 
+			const toolPayload = tools.length > 0 ? { tools } : {};
+
 			const data = await post<{
 				message?: {
 					content?: string;
@@ -216,8 +220,8 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 					model,
 					messages: toOllamaMessages(request.messages),
 					stream: false,
-					tools,
-					options: { temperature: request.temperature, num_predict: request.maxTokens },
+					...toolPayload,
+					options: { temperature: request.temperature, num_predict: request.maxTokens, num_ctx: config.numCtx },
 				},
 				request.signal,
 			);
@@ -244,7 +248,8 @@ export const ollama = adapterFactory('ollama', (config: { baseUrl?: string; mode
 			};
 		},
 	};
-});
+},
+);
 
 function toOllamaMessages(messages: LLMMessage[]) {
 	return messages.map((msg) => {

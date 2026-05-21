@@ -1,5 +1,5 @@
-import type { JsonRpcMessage, McpTransport, TokenProvider } from '../types.js';
 import { McpAuthError, McpConnectionError, McpProtocolError, McpSessionExpiredError } from '../core/errors.js';
+import type { JsonRpcMessage, McpTransport, TokenProvider } from '../types.js';
 
 type StreamableHttpTransportConfig = {
 	url: string;
@@ -87,11 +87,7 @@ export const createStreamableHttpTransport = (config: StreamableHttpTransportCon
 		return h;
 	};
 
-	const fetchWithAuth = async (
-		input: RequestInfo,
-		init: RequestInit,
-		retryOn401 = true,
-	): Promise<Response> => {
+	const fetchWithAuth = async (input: RequestInfo, init: RequestInit, retryOn401 = true): Promise<Response> => {
 		const res = await fetchImpl(input, init);
 		if (res.status === 401 && retryOn401 && auth?.refreshToken) {
 			await auth.refreshToken();
@@ -183,7 +179,9 @@ export const createStreamableHttpTransport = (config: StreamableHttpTransportCon
 			try {
 				res = await fetchWithAuth(url, { method: 'POST', headers, body });
 			} catch (err) {
-				throw new McpConnectionError(`HTTP request failed: ${err instanceof Error ? err.message : String(err)}`);
+				throw new McpConnectionError(
+					`HTTP request failed: ${err instanceof Error ? err.message : String(err)}`,
+				);
 			}
 
 			if (res.status === 404 && sessionId) {
